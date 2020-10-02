@@ -82,7 +82,7 @@ public class HTTPclient {
 //                                requestType = Request.Request_Type.GET;
                                 //check if the user wants POST
                             } else if (input_parameters[i].equals("post")) {
-//todo post
+//todo post1
 //                                requestType = Request.Request_Type.POST;
                                 //check if the host is in correct format and put it into url
                             } else if (input_parameters[i].equals("-d")) {
@@ -260,7 +260,7 @@ public class HTTPclient {
 
         Body body = new Body();
         Query_Parameters query = new Query_Parameters();
-        
+
         public String getRequest() {
             return request;
         }
