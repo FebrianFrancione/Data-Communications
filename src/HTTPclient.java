@@ -61,7 +61,7 @@ public class HTTPclient {
                     if (!input_parameters[0].equals("httpc")) {
                         System.out.println("Input error: Command Line didn't recognize initial \"httpc\" parameter!");
 //                        user input must also have a length greater than 1
-                    } else if (input_parameters.length < 2) {
+                    } else if (input_parameters.length <= 1) {
                         System.out.println("Input error: Invalid command line length!");
                     } else {
 //                        processing the commands for getting help methods - options are help/gethelp/posthelp
@@ -202,8 +202,39 @@ public class HTTPclient {
         }
 
     }
-
-
+    public static String help(String type) {
+        if (type.equals("get_help")) {
+            String GET_help_response = "Usage: httpc get [-v] [-h key:value] URL\n"
+                    + "\r\n"
+                    + "Get executes a HTTP GET request for a given URL"
+                    + "\r\n"
+                    + "\t -v		    Prints the detail of the response such as protocol, status and headers.\n"
+                    + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n";
+            return GET_help_response;
+        } else if (type.equals("post_help")) {
+            String POST_help_response = "Usage: httpc httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
+                    + "\r\n"
+                    + "httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
+                    + "\r\n"
+                    + "\t -v			Prints the detail of the response such as protocol, status and headers.\n"
+                    + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
+                    + "\t -d string		Associates an inline data to the body HTTP POST request.\n"
+                    + "\t -f file		Associates the content of a file to the body HTTP POSTrequest.\n"
+                    + "\r\n"
+                    + "Either [-d] or [-f] can be used but not both.";
+            return POST_help_response;
+        } else {
+            String base_help = "httpc is a curl-like application but supports HTTP protocol only.\n"
+                    + "Usage:\n"
+                    + "\t httpc command [arguments]\n"
+                    + "The commands are:\n"
+                    + "\t get     executes a HTTP GET request and prints the response.\n"
+                    + "\t post    executes a HTTP POST request and prints the response.\n"
+                    + "\t help    prints this screen.\n"
+                    + "Use \"httpc help [command]\" for more information about a command.";
+            return base_help;
+        }
+    }
     public static class post_formatting {
 //        creates text body for post requests and must be inserted at the end of returns.
         String post_body;
@@ -247,7 +278,7 @@ public class HTTPclient {
         }
 
         post_formatting postformatting = new post_formatting();
-        Query_Parameters query = new Query_Parameters();
+        Query query = new Query("");
 
         public String getRequest() {
             return request;
@@ -270,62 +301,48 @@ public class HTTPclient {
 ////        //    constructor of the Request for GET
 
 //    user must choose the request_type
-        public Request(r_type rtype, Query_Parameters query_parameters, HTTP http_){
-            this.query = query_parameters;
+        public Request(r_type rtype, Query query_, HTTP http_){
+            this.query = query_;
             this.http_ = http_;
             if (rtype.equals(r_type.GET)){
-                request = "GET /get" + query.getQuery_Parameter() + http_.toString() + "\r\n";
+                request = "GET /get" + query.getQuery() + http_.toString() + "\r\n";
             }
         }
         //    another constructor of the Request for POST
 //    If request_Type is GET, then the Content_Type and Body should be empty.
-        public Request(r_type rtype, String content_type, HTTP http_, Query_Parameters query_parameters, post_formatting postformatting){
+        public Request(r_type rtype, String content_type, HTTP http_, Query query_, post_formatting postformatting){
             this.postformatting = postformatting;
             this.content_type = content_type;
-            this.query = query_parameters;
+            this.query = query_;
             this.http_ = http_;
 
             if(rtype.equals(r_type.POST)){
-                this.request = "POST /post" + query.getQuery_Parameter()  + http_.toString()
+                this.request = "POST /post" + query.getQuery()  + http_.toString()
                         + "Content-Type:" + this.content_type + "\r\n"
                         + "Content-Length: " + postformatting.PostLength() + "\r\n"
                         + "\r\n" + postformatting.PostContent();
             }
         }
 
-        public static String help(String type) {
-            if (type.equals("get_help")) {
-                String GET_help_response = "Usage: httpc get [-v] [-h key:value] URL\n"
-                        + "\r\n"
-                        + "Get executes a HTTP GET request for a given URL"
-                        + "\r\n"
-                        + "\t -v		    Prints the detail of the response such as protocol, status and headers.\n"
-                        + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n";
-                return GET_help_response;
-            } else if (type.equals("post_help")) {
-                String POST_help_response = "Usage: httpc httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
-                        + "\r\n"
-                        + "httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
-                        + "\r\n"
-                        + "\t -v			Prints the detail of the response such as protocol, status and headers.\n"
-                        + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
-                        + "\t -d string		Associates an inline data to the body HTTP POST request.\n"
-                        + "\t -f file		Associates the content of a file to the body HTTP POSTrequest.\n"
-                        + "\r\n"
-                        + "Either [-d] or [-f] can be used but not both.";
-                return POST_help_response;
-            } else {
-                String base_help = "httpc is a curl-like application but supports HTTP protocol only.\n"
-                        + "Usage:\n"
-                        + "\t httpc command [arguments]\n"
-                        + "The commands are:\n"
-                        + "\t get     executes a HTTP GET request and prints the response.\n"
-                        + "\t post    executes a HTTP POST request and prints the response.\n"
-                        + "\t help    prints this screen.\n"
-                        + "Use \"httpc help [command]\" for more information about a command.";
-                return base_help;
+//        Query adds a query parameter used in get/post methods
+        public class Query {
+            String query_Parameter = "";
+            //if no arguments passed, simply return ?
+//        if Query is passed a parameter, will append the parameter to the ?
+            public Query(String query_Parameters) {
+                if (query_Parameters.equals("")){
+                    query_Parameter = "? ";
+                }else{
+                    this.query_Parameter = "?" + query_Parameters + " ";
+                }
+            }
+//            calls to return the updated query parameter.
+            public String getQuery() {
+                return query_Parameter;
             }
         }
+
+
 
     }
 }
