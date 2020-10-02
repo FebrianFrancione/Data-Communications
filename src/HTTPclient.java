@@ -30,7 +30,7 @@ public class HTTPclient {
 
                     // boolean settings for the command line interface, sets to true if user enters command.
 //                    todo
-//                    test3
+//                    test4
 //                    need to implement
                     boolean cmd_d = false;
                     boolean cmd_f = false;
