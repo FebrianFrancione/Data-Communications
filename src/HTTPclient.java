@@ -20,17 +20,27 @@ public class HTTPclient {
 
             while (!user_input.equals("exit")) {
                 try {
-
+//                    File imports. take inputs using fileReader
+                    FileReader file_reader;
+//                    defaulted to null
+                    File input_file;
+//setting body String to empty
+                    String string_body = "";
+//Setting http version to 1.0
+                    Request.HTTP httpVersion = Request.HTTP.HTTP1_0;
+//                    Creating Content-Type as application/json
+                    String content_type = "application/json";
+//                    Setting url & url String to null
                     URL url = null;
-                    String input_parameters[];
-                    String urlString = null; //
+                    String string_url = null; //
+//                    used in the GET/Post mthods
                     String hostString = "";
-                    String bodyString = "";
-
+//                    creating an array for input parameters given by user
+                    String input_parameters[];
 
                     // boolean settings for the command line interface, sets to true if user enters command.
 //                    todo
-//                    test4
+//                    not fully implemented yet, to be continued.
 //                    need to implement
                     boolean cmd_d = false;
                     boolean cmd_f = false;
@@ -38,25 +48,21 @@ public class HTTPclient {
                     boolean cmd_v = false;
 
 
-//                    check
-                    String contentType = "application/json";
 //                    Request.Request_Type requestType = Request.Request_Type.GET;
-//                    Request.HTTP_version httpVersion = Request.HTTP_version.HTTP1_0;
 //                    Body body = null;
 //                    Query_Parameters queryParameters = new Query_Parameters();
 //                    Request request;
-                    FileReader fileReader;
-                    File input_file = null;
 
-//                    processing user input
-                    //split the user input into string array chunks.
+
+//                    processing user input:
+                    //split the user input by whitespaces
                     input_parameters = user_input.split("\\s+");
-//                    user input must begin with http or retruns error
+//                    user input must begin with httpc or returns error
                     if (!input_parameters[0].equals("httpc")) {
-                        System.out.println("Command Line didn't recognize initial \"httpc\" parameter!");
+                        System.out.println("Input error: Command Line didn't recognize initial \"httpc\" parameter!");
 //                        user input must also have a length greater than 1
                     } else if (input_parameters.length < 2) {
-                        System.out.println("Invalid command line length!");
+                        System.out.println("Input error: Invalid command line length!");
                     } else {
 //                        processing the commands for getting help methods - options are help/gethelp/posthelp
                         for (int i = 1; i < input_parameters.length; i++) {
@@ -88,7 +94,7 @@ public class HTTPclient {
                                             if (user_input.charAt(k) == '\'') {
                                                 break;
                                             } else {
-                                                bodyString += user_input.charAt(k);
+                                                string_body += user_input.charAt(k);
                                             }
                                         }
                                         break;
@@ -103,13 +109,13 @@ public class HTTPclient {
                                     input_file = new File(input_parameters[i + 1]);
                                     System.out.println("input_file: " + input_file);
 
-                                    fileReader = new FileReader(input_file);
-                                    System.out.println("fileReader: " + fileReader);
+                                    file_reader = new FileReader(input_file);
+                                    System.out.println("fileReader: " + file_reader);
                                     int character;
-                                    while ((character = fileReader.read()) != -1) {
-                                        bodyString += (char) character;
+                                    while ((character = file_reader.read()) != -1) {
+                                        string_body += (char) character;
                                     }
-                                    System.out.println(bodyString);
+                                    System.out.println(string_body);
 //                                    todo new body
 //                                    body = new Body(bodyString);
                                 } catch (FileNotFoundException e) {
@@ -123,9 +129,9 @@ public class HTTPclient {
                                 cmd_h = true;
                                 for (int l = 0; l < input_parameters[i + 1].length(); l++) {
                                     if (input_parameters[i + 1].charAt(l) == ':') {
-                                        contentType = "";
+                                        content_type = "";
                                         for (int m = l + 1; m < input_parameters[i + 1].length(); m++) {
-                                            contentType += input_parameters[i + 1].charAt(m);
+                                            content_type += input_parameters[i + 1].charAt(m);
                                         }
                                     }
                                 }
@@ -134,8 +140,8 @@ public class HTTPclient {
                                 cmd_v = true;
                                 //check if user wants different content type
                             } else if (input_parameters[i].contains("http://")) {
-                                urlString = input_parameters[i];
-                                String urlStringNoQuote = urlString.replace("\'", ""); //remove '' from string
+                                string_url = input_parameters[i];
+                                String urlStringNoQuote = string_url.replace("\'", ""); //remove '' from string
 
                                 url = new URL(urlStringNoQuote);
 
@@ -228,4 +234,77 @@ public class HTTPclient {
         }
     }
 
+    public static class Request {
+        //        create empty string for request
+        String request = "";
+        String content_type = "application/json\r\n";
+        //        setting HTTP version
+        HTTP http_ = HTTP.HTTP1_0;
+
+        public enum HTTP {
+            HTTP1_0("HTTP/1.0\r\n");
+            private String value;
+            HTTP(String s) {
+                value = s;
+            }
+            @Override
+            public String toString() {
+                return value;
+            }
+        }
+        //    enum Request_Type is to define the request is use for GET or POST.
+        public enum r_type {
+            GET,
+            POST;
+        }
+
+        Body body = new Body();
+        Query_Parameters query = new Query_Parameters();
+        
+        public String getRequest() {
+            return request;
+        }
+//        public Request(){
+////            request = "GET /get" + query.getQuery_Parameter() + http_.toString() + "\r\n";
+////        }
+////        //    constructor of the Request
+//////    user must choose the request_type
+////        public Request(r_type rtype){
+////            if (rtype.equals(r_type.GET)){
+////                request = "GET /get" + query.getQuery_Parameter() + http_.toString() + "\r\n";
+////            } else {
+////                request = "POST /post" + query.getQuery_Parameter() + http_.toString()
+////                        + "Content-Type:" + content_type
+////                        + "Content-Length: " + body.getBodyLength() + "\r\n"
+////                        + "\r\n" + body.getBodyContent();
+////            }
+////        }
+////        //    constructor of the Request for GET
+
+//    user must choose the request_type
+        public Request(r_type rtype, Query_Parameters query_parameters, HTTP http_){
+            this.query = query_parameters;
+            this.http_ = http_;
+            if (rtype.equals(r_type.GET)){
+                request = "GET /get" + query.getQuery_Parameter() + http_.toString() + "\r\n";
+            }
+        }
+        //    another constructor of the Request for POST
+//    If request_Type is GET, then the Content_Type and Body should be empty.
+        public Request(r_type rtype, String content_type, HTTP http_, Query_Parameters query_parameters, Body body){
+            this.body = body;
+            this.content_type = content_type;
+            this.query = query_parameters;
+            this.http_ = http_;
+
+            if(rtype.equals(r_type.POST)){
+                this.request = "POST /post" + query.getQuery_Parameter()  + http_.toString()
+                        + "Content-Type:" + this.content_type + "\r\n"
+                        + "Content-Length: " + body.getBodyLength() + "\r\n"
+                        + "\r\n" + body.getBodyContent();
+            }
+        }
+
+
+    }
 }
