@@ -23,12 +23,35 @@ public class HTTPserver {
     }
 
     //        public GET(String host, int port, URL url, HTTPclient request, Boolean displayHeader){
-    public void GET(URL url, Boolean displayHeader){
+    public void GET(URL url, Boolean displayHeader, HTTPclient.Request request){
         //        if need display Header
         if (displayHeader){
             System.out.println("TRY");
 //                PrintWriter pr = new PrintWriter(HTTPserver.s.getOutputStream());
-//                try {
+                try {
+
+//                    OutputStream output = socket.getOutputStream();
+////
+//                    output.write(request.getRequest().getBytes());
+//                    output.flush();
+
+                    System.out.println("Entering this false section");
+                    System.out.println("False URL " + url);
+                    System.out.println("uhttpc get 'http://httpbin.org/get?course=networking&assignment=1'rl type " + url.getClass());
+                    // open the url stream, wrap it an a few "readers"
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                    // write the output to stdout
+                    System.out.println(request.getRequest().getBytes());
+                    String line;
+                    while ((line = reader.readLine()) != null)
+                    {
+                        if(!line.contains("Accept")&&!line.contains("X-Amzn-Trace-Id")&&!line.contains("origin")){
+                            System.out.println(line);
+                        }
+
+                    }
+                    reader.close();
+//
 //
 //                    System.out.println("displayHeader " + displayHeader);
 //                    System.out.println("host is: "+host);
@@ -55,9 +78,9 @@ public class HTTPserver {
 ////
 ////                    System.out.println(response);
 ////                    socket.close();
-//                } catch (IOException e){
-//                    e.printStackTrace();
-//                }
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
         } else {
             try {
 //                System.out.println("entering the false section");

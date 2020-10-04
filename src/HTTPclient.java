@@ -47,11 +47,11 @@ public class HTTPclient implements Serializable{
 ///                    check
                     String contentType = "application/json";
                     Request.Request_Type requestType = Request.Request_Type.GET;
-//                    Request.HTTP_version httpVersion = Request.HTTP_version.HTTP1_0;
+                    Request.HTTP_version httpVersion = Request.HTTP_version.HTTP1_0;
 //                    Body body = null;
-//                    Query_Parameters queryParameters = new Query_Parameters();
+                    Query_Parameters queryParameters = new Query_Parameters();
                     String test = "?";
-//                    Request request;
+                    Request request;
                     FileReader fileReader;
                     File input_file = null;
 //                    processing user input
@@ -151,10 +151,11 @@ public class HTTPclient implements Serializable{
 //                                    new Query_Parameters("");
 
                                 } else {
-//                                    new Query_Parameters(url.getQuery());
+                                    queryParameters = new Query_Parameters(url.getQuery());
+                                    System.out.println("query param: " + queryParameters);
 //                                    Query_Parameters query_parameters = new Query_Parameters(url.getQuery());
 //                                    System.out.println(query_parameters);
-                                    test="?" + url.getQuery();
+//                                    test="?" + url.getQuery();
                                 }
                                 //check if user wants different version of HTTP
                             }
@@ -225,7 +226,8 @@ public class HTTPclient implements Serializable{
 //                            new GET(hostString, 80, url, request, v);
 //                            pr.flush(new HTTPserver.GET(hostString,80,url, request,v));
 //                            new HTTPserver().GET(80,url,v);
-                            new HTTPserver().GET(url,v);
+                            request = new Request(requestType, queryParameters, httpVersion);
+                            new HTTPserver().GET(url,v,request);
                             pr.print(80);
                             pr.flush();
 
@@ -335,7 +337,9 @@ public class HTTPclient implements Serializable{
             query_Parameter = "? ";
         }
         public Query_Parameters(String query_Parameters) {
+            System.out.println("Entering quetry param");
             this.query_Parameter = "?" + query_Parameters + " ";
+            System.out.println("retruned query param "+this.query_Parameter);
         }
         public String getQuery_Parameter() {
             return query_Parameter;
