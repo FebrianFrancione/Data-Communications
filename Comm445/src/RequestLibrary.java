@@ -65,6 +65,7 @@ public class RequestLibrary {
 		for(int i = 0; i < arr.length; i++) {
 			if(arr[i].contains("http://httpbin.org/post")) {
 				host = arr[i];
+				host = host.substring(7,18);
 				//System.out.println("host: " + host);
 			}
 			if(arr[i].contains("-h")) {
@@ -84,7 +85,7 @@ public class RequestLibrary {
 			}
 		}
 		keyValue = keyValue + "\nContent-Length: " + contentLength;
-		socket = new Socket("httpbin.org", PORT);
+		socket = new Socket(host, PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
 		writer.write("POST " + "/post " +(String) VERSION+ "\r\n" + keyValue  +"\r\n\r\n" + entityBody);
