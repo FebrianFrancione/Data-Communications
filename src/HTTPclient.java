@@ -376,6 +376,7 @@ class Httpclient {
                 }
             }
             else  {
+//                exit the system
                 System.out.println("System exiting...");
                 System.exit(0);
             }
