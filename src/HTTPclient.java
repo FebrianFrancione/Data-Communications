@@ -1,277 +1,122 @@
-
-import com.sun.net.httpserver.HttpServer;
-
-import java.io.*;
 import java.net.Socket;
-import java.rmi.server.LogStream;
-import java.util.Scanner;
 //import net
-import java.net.MalformedURLException;
-import java.net.URL;
 //import io
-import javax.swing.text.AbstractDocument;
-import java.io.*;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+import java.io.BufferedReader;
+import java.io.Console;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.Map;
+import java.io.IOException;
+
+
+import java.io.File;
+import java.io.FileReader;
 
 
 
-public class HTTPclient implements Serializable{
+class Httpclient {
 
-    public static void main(String[] args) {
+    private static File filename;
+    private final static String HTTP_METHOD_GET = "GET";
+    private final static String HTTP_METHOD_POST = "POST";
+
+//    initializing all cmd additional commands to false, which will be modified when called.
+    private static boolean patternCheck, cmd_verbose,cmd_data,cmd_file,cmd_header=false;
+
+//    initializing strings data and header:
+    private static String data_string, string_header = "";
+
+    public static void GET_METHOD(String host, String path){
         try {
-            Socket s = new Socket("localhost", 80);
-            PrintWriter pr = new PrintWriter(s.getOutputStream());
-            InputStreamReader in = new InputStreamReader(s.getInputStream());
-            BufferedReader bf = new BufferedReader(in);
-            Scanner scanner = new Scanner(System.in);
-
-            String user_input = "";
-            System.out.println("Welcome to the Command Line: Please enter your command:");
-            user_input = scanner.nextLine();
-            System.out.println("You have input: " + user_input);
-
-
-            while (!user_input.equals("exit")) {
-                try{
-                    URL url = null;
-                    String parameters[];
-                    String urlString = null; //
-                    String hostString = "";
-                    String bodyString = "";
-                    // boolean settings for the command line interface, sets to true if user enters command.
-                    boolean v = false;
-                    boolean h = false;
-                    boolean d = false;
-                    boolean f = false;
-///                    check
-                    String contentType = "application/json";
-                    Request.Request_Type requestType = Request.Request_Type.GET;
-                    Request.HTTP_version httpVersion = Request.HTTP_version.HTTP1_0;
-//                    Body body = null;
-                    Query_Parameters queryParameters = new Query_Parameters();
-                    String test = "?";
-                    Request request;
-                    FileReader fileReader;
-                    File input_file = null;
-//                    processing user input
-                    //split the user input into string array chunks.
-                    parameters = user_input.split("\\s+");
-                    //check if the user input is empty or not start with httpc
-                    if (parameters.length <= 1 || !parameters[0].equals("httpc")) {
-                        System.out.println("Invalid command line.");
-                    } else {
-                        for (int i = 1; i < parameters.length; i++) {
-                            // for help commands
-                            if (parameters[i].equals("help")) {
-
-                                if (parameters.length > i + 1 && parameters[i + 1].equals("get")) {
-                                    System.out.println("check 0: gethelp");
-                                    help("get_help");
-
-                                } else if (parameters.length > i + 1 && parameters[i + 1].equals("post")) {
-                                    help("post_help");
-
-                                } else {
-                                    help("");
-
-                                }
-                            }
-                            // check if user wants verbose info
-                            else if (parameters[i].equals("-v")) {
-                                //TODO
-                                v = true;
-                                //check if user wants different content type
-                            }
-//                            else if (parameters[i].equals("-h")) {
-//                                //TODO
-//                                h = true;
-//
-//                                for (int l = 0; l < parameters[i + 1].length(); l++) {
-//                                    if (parameters[i + 1].charAt(l) == ':') {
-//                                        contentType = "";
-//                                        for (int m = l + 1; m < parameters[i + 1].length(); m++) {
-//                                            contentType += parameters[i + 1].charAt(m);
-//                                        }
-//
-//                                    }
-//                                }
-//
-//                                //check if the user wants GET
-//                            }
-//                            Checkpoint
-                            else if (parameters[i].equals("get")) {
-                                System.out.println("check 1: get reached, calling request type get");
-                                requestType = Request.Request_Type.GET;
-                                //check if the user wants POST
-                            }
-                            else if (parameters[i].equals("post")) {
-//                                requestType = Request.Request_Type.POST;
-
-                                //check if the host is in correct format and put it into url
-                            }
-                            else if (parameters[i].contains("http://")) {
-                                System.out.println("1) print url" + urlString + "before");
-                                urlString = parameters[i];
-                                System.out.println("urlstriong is param[i] " + urlString);
-                                String urlStringNoQuote = urlString.replace("\'", ""); //remove '' from string
-//                                System.out.println("Url with no quotes " + urlStringNoQuote);
-
-//                                dont need
-                                url = new URL(urlStringNoQuote);
-                                System.out.println("new url no quotes: " + url);
-
-//                                System.out.println("Transofmring to new url " + url);
-
-//                                dont need
-                                hostString = url.getHost();
-//                                System.out.println("Getting the url host " + hostString);
-
-//                                String Path= url.getPath();
-//                                System.out.println("url path: " + Path);
-//                                String Auth = url.getAuthority();
-//                                System.out.println("url authrority: " + Auth);
-//                                Object cont = url.getContent();
-//                                System.out.println("url content: " + cont);
-//                                int defaultPort = url.getDefaultPort();
-//                                System.out.println("url default port: " + defaultPort);
-//                                String file = url.getFile();
-//                                System.out.println("url file "+ file);
-//                                String prot = url.getProtocol();
-//                                System.out.println("url protocol: " + prot);
-//                                String ref=url.getRef();
-//                                System.out.println("url ref: " + ref);
-//                                String userI= url.getUserInfo();
-//                                System.out.println("User info: " + userI);
-//                                String query = url.getQuery();
-//                                System.out.println("Query from url "+query);
-//                                System.out.println("url is "+urlString);
-                                if (url.getQuery() == null) {
-                                    test="?";
-//                                    new Query_Parameters("");
-
-                                } else {
-                                    queryParameters = new Query_Parameters(url.getQuery());
-                                    System.out.println("query param: " + queryParameters);
-//                                    Query_Parameters query_parameters = new Query_Parameters(url.getQuery());
-//                                    System.out.println(query_parameters);
-//                                    test="?" + url.getQuery();
-                                }
-                                //check if user wants different version of HTTP
-                            }
-//                            else if (parameters[i].equals("-d")) {
-//                                //TODO
-//                                d = true;
-//
-//                                for (int j = 0; j < input_file.length(); j++) {
-//                                    if (user_input.charAt(j) == '\'') {
-//                                        j++;
-//                                        for (int k = j; k < input_file.length(); k++) {
-//                                            if (user_input.charAt(k) == '\'') {
-//                                                break;
-//                                            } else {
-//                                                bodyString += user_input.charAt(k);
-//                                            }
-//                                        }
-//                                        break;
-//                                    }
-//                                }
-////                                body = new Body(bodyString);
-//                            }
-                            //check if user wants to associate the content of a input_file to the body HTTP POST
-//                            else if (parameters[i].equals("-f")) {
-//                                //TODO
-//                                f = true;
-//
-//                                try {
-//                                    input_file = new File(parameters[i + 1]);
-//                                    System.out.println("input_file: " + input_file);
-//
-//                                    fileReader = new FileReader(input_file);
-//                                    System.out.println("fileReader: " + fileReader);
-//                                    int character;
-//                                    while ((character = fileReader.read()) != -1) {
-//                                        bodyString += (char) character;
-//                                    }
-//                                    System.out.println(bodyString);
-////                                    body = new Body(bodyString);
-//                                } catch (FileNotFoundException e) {
-//                                    System.out.println("Please input Absolute Path of the input_file!");
-//                                    //e.printStackTrace();
-//                                } catch (IOException e) {
-//                                    System.out.println("IO Exception occurred");
-//                                    //e.printStackTrace();
-//                                }
-//                            }
-                        }
-                    }
-
-
-                    //retrieved all information from user's input, now we could send our request and receive info
-                    try {
-//                        System.out.println("entering final stage " + url);
-                        if (requestType.equals(Request.Request_Type.GET) && url != null) {
-                            System.out.println("Get and not null enter");
-////                            System.out.println("Making a new request with requestype "+requestType +" query paramters: "+ queryParameters+" and http version "+ httpVersion);
-////                            System.out.println("Making a new request with requestype "+requestType +" query paramters: "+ test +" and http version "+ httpVersion);
-//                            System.out.println("test" + test);
-//                            request = new Request(requestType, queryParameters, httpVersion);
-////                            System.out.println("replacing test with url: " + urlString);
-//                            request = new Request(requestType, test, httpVersion);
-////                            System.out.println("Cjeckpoint");
-//                            System.out.println("hostring: "+hostString);
-////                            System.out.println("v status "+v);
-////                            System.out.println("This is the irl string: " + urlString.getClass());
-//                            System.out.println("Entering the GET method");
-//                            new GET(hostString, 80, url, request, v);
-//                            pr.flush(new HTTPserver.GET(hostString,80,url, request,v));
-//                            new HTTPserver().GET(80,url,v);
-                            request = new Request(requestType, queryParameters, httpVersion);
-                            new HTTPserver().GET(url,v,request);
-                            pr.print(80);
-                            pr.flush();
-
-//                            pr.flush(new HTTPserver.GET(hostString,80,url,v));
-
-                            pr.println("Test123");
-                            pr.flush();
-                        }
-//                        else if (requestType.equals(Request.Request_Type.POST) && urlString != null) {
-//                            request = new Request(requestType, contentType, httpVersion, queryParameters, body);
-//                            if (d == true && f == true) {
-//                                System.out.println("Either [-d] or [-f] can be used but not both.");
-//                            } else {
-//                                new POST(hostString, 80, request, v);
-//                            }
-
-//                        }
-                    } catch (NullPointerException e) {
-                        //System.out.println(e);
-                        System.out.println("Due to the input mistake of input_file path, we cannot provide services.");
-                    } catch (Exception e) {
-                        //System.out.println(e);
-                        System.out.println("Some error occurred, please check your input.");
-                    }
-
-                }catch (MalformedURLException URLe){
-                    System.out.println(URLe);
-                }catch (Exception e){
-                    e.printStackTrace();
-                    System.out.println("Invalid Comman!");
-                }
-                System.out.println("\nEnter the command line here: ");
-                user_input = scanner.nextLine();
+//            Creating the Socket to connect
+//            using the host called and default port: 80
+            Socket socket = new Socket(host, 80);
+//            opening printwriter
+            PrintWriter pw = new PrintWriter(socket.getOutputStream());
+            String file_name = null;
+            //request being created
+            String cmd_request = "";
+            if (path != "" || path != null) {
+                cmd_request = "GET " + path + " HTTP/1.0";
+            } else {
+                cmd_request = "GET / HTTP/1.0\r\nHost: " + host + "\r\n\r\n";
             }
-            scanner.close();
+            pw.println(cmd_request);
 
-            System.out.print("Command Line has exited. Thank you for using our program!");
-        } catch (Exception e){
+            //Output file request
+            if(path.contains("-out")){
+                System.out.println("Outputfile called");
+                file_name = path.substring(path.indexOf("-out")+3);
+                path = path.substring(0, path.indexOf("-out"));
+            }
+
+            if (string_header != "") {
+                String[] header_array = string_header.split(" ");
+                for (int i = 0; i < header_array.length; i++) {
+                    pw.println(header_array[i]);
+                }
+
+//String modifications
+                for (String header: header_array) {
+                    if (header.contains("=")) {
+                        pw.println(header.split("=")[0] + ":" + header.split("=")[1]);
+                    }
+                }
+            }
+
+            pw.println("");
+//            flushing data
+            pw.flush();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            String string_output;
+            String response = "";
+
+            while ((string_output = br.readLine()) != null) {
+                response += string_output + "\n";
+            }
+//            formatting the output
+                if (cmd_verbose == true) {
+                    System.out.println(response);
+                } else {
+                    String[] responseFormatted = response.split("\n\n");
+
+                    for (int i = 1; i < responseFormatted.length; i++)
+                        System.out.println(responseFormatted[i]);
+                }
+
+
+            if(file_name != null){
+                try {
+                    PrintWriter extWriter = new PrintWriter(file_name);
+                    System.out.println("response:" +response);
+                    extWriter.write(response);
+                    extWriter.close();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+
+            br.close();
+            pw.close();
+            socket.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    //    helper method for command lines
-    public static void help(String type) {
-        if (type.equals("get_help")) {
+
+    //Displays the help menu
+    public static void cmd_help(String cmd_help_option) {
+        if (cmd_help_option.equals("get")) {
             System.out.println(
                     "Usage: httpc get [-v] [-h key:value] URL\n"
                             + "\r\n"
@@ -280,7 +125,7 @@ public class HTTPclient implements Serializable{
                             + "\t -v		    Prints the detail of the response such as protocol, status and headers.\n"
                             + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
             );
-        } else if (type.equals("post_help")) {
+        } else if (cmd_help_option.equals("post")) {
             System.out.println(
                     "Usage: httpc httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
                             + "\r\n"
@@ -306,118 +151,265 @@ public class HTTPclient implements Serializable{
         }
     }
 
-//Body class is to create body for POST request.
-//Body should locate at the end of the request.
-//The body format should follow the Content-Type of request.
-//By default the body is "{}" means empty
-    public static class Body {
-        String body;
-        public Body(){
-            body = "{}";
+    public static void main(String[] args) {
+
+        String value;
+        Console console = System.console();
+        if (console == null) {
+            System.out.println("Enter your terminal to be able to access the command line");
+            System.out.println("Basic troubleshooting: In terminal, enter the cd src directory, then enter \" Javac HTTPclient.java \" and finally enter \" Java Httpclient\". This will allow you to access the rest of the program.");
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.exit(0);
         }
-        public Body(String body){
-            this.body = body;
-        }
-        public int getBodyLength(){
-            return body.length();
-        }
-        public String getBodyContent() {
-            return body;
+        System.out.println("Assignment 1: Febrian Francione 40049253, ");
+        //HTTP client
+        while (patternCheck != true) {
+            System.out.println("Command Line Menu");
+            System.out.println("Enter \"1\" to open help options");
+            System.out.println("Enter \"2\" to open the httpc functions");
+            String option = console.readLine();
+//            Menu functions
+            if (option.equals("1")) {
+                System.out.println("Enter \"help\" for default help");
+                System.out.println("Enter \"get\" for get help");
+                System.out.println("Enter \"post\" for post help");
+                System.out.println("Enter anything else to return to the main menu");
+                String cmd_help_option = console.readLine();
+
+                if(cmd_help_option.equals("help") || cmd_help_option.equals("get") || cmd_help_option.equals("post")) {
+                    System.out.println("You have entered: " + cmd_help_option);
+                    cmd_help(cmd_help_option);
+                    System.out.println("Main Menu (Enter any key)");
+                    console.readLine();
+                }
+                else {
+                    continue;
+                }
+            } else if(option.equals("2")) {
+                value = console.readLine("Enter HTTP function (Enter \"exit\" to return to Command Line Menu): ");
+                //Exit if the value entered is 0
+                if (value.equals("0")) {
+                    continue;
+                }
+                //Regex pattern; separate entities grouped within parenthesis
+                Pattern http_pattern = Pattern.compile("httpc(\\s+(get|post))((\\s+-v)?(\\s+-h\\s+([^\\s]+))?(\\s+-d\\s+('.+'))?(\\s+-f\\s+([^\\s]+))?)(\\s+'((http[s]?:\\/\\/www\\.|http[s]?:\\/\\/|www\\.)?([^\\/]+)(\\/.+)?)'*)");
+                Matcher matcher = http_pattern.matcher(value);
+                if (matcher.find()) {
+                    patternCheck = true;
+                    //setting post/get to uppercase: GET/POST
+                    String match_type = matcher.group(2);
+                    match_type = match_type.toUpperCase();
+                    //Trim the host
+                    String host = matcher.group(14).replaceAll("'", "");
+                    host = host.trim();
+                    //Assign the path if not empty
+                    String path = "";
+                    if (matcher.group(15) != null) {
+                        path = matcher.group(15).replaceAll("'", "");
+                        path = path.trim();
+                    }
+                    //cmd -v
+                    if (matcher.group(4) != null){
+                        cmd_verbose = true;
+                    }else{
+                        cmd_verbose = false;
+                    }
+                    //cmd-h
+                    if(matcher.group(5) != null){
+                        cmd_header = true;
+                        string_header = matcher.group(6);
+                    }else{
+                        cmd_header = false;
+                    }
+
+                    //cmd -d
+                    if(matcher.group(7) != null){
+                        cmd_data = true;
+                        data_string = matcher.group(8);
+                    }else{
+                        cmd_data = false;
+                    }
+
+                    //cmd -f
+                    if(matcher.group(9) != null){
+                        cmd_file = true;
+                        filename = new File(matcher.group(10));
+                    }else{
+                        cmd_file = false;
+                    }
+
+                    //Additional check GET method for cURL
+                    if (match_type.equals(HTTP_METHOD_GET) && (cmd_data || cmd_file)) {
+                        patternCheck = false;
+                        System.out.println("-f and -d cannot be combined in GET!");
+                        continue;
+                    }
+                    //Additional check on POST method for cURL
+                    if (match_type.equals(HTTP_METHOD_POST) && cmd_data && cmd_file) {
+                        patternCheck = false;
+                        System.out.println("-f and -d cannot be combined in POST!");
+                        continue;
+                    }
+                    System.out.println("User input has been processed, sending info to httpc");
+                    httpc(path, host, match_type, null, cmd_data, cmd_file, cmd_verbose, filename);
+                } else {
+                    System.out.println("Invalid Input!");
+                }
+            }
+            else  {
+                System.out.println("System exiting...");
+                System.exit(0);
+            }
         }
     }
 
 
-//Query_Parameters class is to create query for both GET and POST method.
-//Query should locate after /post or /get.
-//e.g. "POST /post?info=info HTTP/1.0\r\n" "?info=info " is query.
-//NOTICE: if query not empty, should add "?" before the query.
-    public static class Query_Parameters {
-        String query_Parameter;
-        public Query_Parameters() {
-            query_Parameter = "? ";
-        }
-        public Query_Parameters(String query_Parameters) {
-            System.out.println("Entering quetry param");
-            this.query_Parameter = "?" + query_Parameters + " ";
-            System.out.println("retruned query param "+this.query_Parameter);
-        }
-        public String getQuery_Parameter() {
-            return query_Parameter;
-        }
-    }
+    //Needed: getting body in json for -d or default
+    public static void HTTP_METHOD(String host, String path, File file, boolean data) {
+        try {
+            //Initialize the socket
+            Socket socket = new Socket(host, 80);
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            InputStream inputStream = socket.getInputStream();
+            OutputStream outputStream = socket.getOutputStream();
+            String body = "";
+            String request = "";
 
+            //If -h
+            if (string_header != "") {
+                String[] headersArray = string_header.split(" ");
+                for (int i = 0; i < headersArray.length; i++) {
+                    writer.println(headersArray[i]);
+                }
 
-    //Request class is to create request for both GET and POST.
-    public static class Request {
-        //    enum Request_Type is to define the request is use for GET or POST.
-        public enum Request_Type {
-            GET,
-            POST;
-        }
-        //    enum HTTP_version is to define the request running on which version of HTTP.
-//    by default using HTTP1.0
-        public enum HTTP_version {
-            HTTP1_0("HTTP/1.0\r\n");
-            private String value;
-            HTTP_version(String s) {
-                value = s;
-            }
-            @Override
-            public String toString() {
-                return value;
-            }
+                //Modify the string if necessary
+                for (String header: headersArray) {
+                    if (header.contains("=")) {
+                        writer.println(header.split("=")[0] + ":" + header.split("=")[1]);
+                    }
+                }
             }
 
-        String request = "";
-        Body body = new Body();
-        Query_Parameters query = new Query_Parameters();
-        String content_type = "application/json\r\n";
-        HTTP_version http_version = HTTP_version.HTTP1_0;
+            //If -d
+            if(data){
+                System.out.println(data_string);
+                System.out.println(data_string.substring(1, data_string.length() - 1));
+                request = "POST /post?info=info HTTP/1.0\r\n"
+                        + "Content-Type:application/json\r\n"
+                        + "Content-Length: " + data_string.length() +"\r\n"
+                        + "\r\n"
+                        + data_string.substring(1, data_string.length() - 1);
+            }
 
-        public Request() {
-            request = "GET /get" + query.getQuery_Parameter() + http_version.toString() + "\r\n";
-        }
+            //If -f
+            else if (file != null) {
 
-        //    constructor of the Request
-//    user must choose the request_type
-        public Request(Request_Type request_type) {
-            if (request_type.equals(Request_Type.GET)) {
-                request = "GET /get" + query.getQuery_Parameter() + http_version.toString() + "\r\n";
+                BufferedReader in = new BufferedReader(new FileReader(file));
+                String line = "";
+                StringBuilder StringBuilder = new StringBuilder();
+
+                while ((line = in .readLine()) != null) {
+                    String formattedLine = line.replaceAll("[\\{\\}]", "").replaceAll("\\s", "");
+
+                    String[] linesArray = formattedLine.split(",");
+                    for (int i = 0; i < linesArray.length; i++) {
+                        StringBuilder.append(linesArray[i]+",");
+                    }
+                    body = "{"+StringBuilder.toString().substring(0, StringBuilder.length() - 1)+"}";
+                    request = "POST /post?info=info HTTP/1.0\r\n"
+                            + "Content-Type:application/json\r\n"
+                            + "Content-Length: " + body.length() +"\r\n"
+                            + "\r\n"
+                            + body;
+
+                } in .close();
+
+            }else{
+                //Must refactor to get data passed in query
+                body = "{"
+                        + "\"DefaultAssignment\":1,"
+                        + "\"DefaultCourse\": \"Networking\""
+                        + "}";
+
+                request = "POST /post?info=info HTTP/1.0\r\n"
+                        + "Content-Type:application/json\r\n"
+                        + "Content-Length: " + body.length() +"\r\n"
+                        + "\r\n"
+                        + body;
+            }
+
+            outputStream.write(request.getBytes());
+            outputStream.flush();
+
+
+            writer.println("");
+            writer.flush();
+
+            BufferedReader bufRead = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            String outStr;
+            String response = "";
+
+            while ((outStr = bufRead.readLine()) != null) {
+                response += outStr + "\n";
+            }
+
+            //Format output as needed
+            if (cmd_verbose == true) {
+                System.out.println(response);
             } else {
-                request = "POST /post" + query.getQuery_Parameter() + http_version.toString()
-                        + "Content-Type:" + content_type
-                        + "Content-Length: " + body.getBodyLength() + "\r\n"
-                        + "\r\n" + body.getBodyContent();
+                String[] responseFormatted = response.split("\n\n");
+
+                for (int i = 1; i < responseFormatted.length; i++)
+                    System.out.println(responseFormatted[i]);
             }
+
+            //Close everything
+            bufRead.close();
+            writer.close();
+            socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        //    constructor of the Request for GET
-//    user must choose the request_type
-        public Request(Request_Type request_type, Query_Parameters query_parameters, HTTP_version http_version) {
-            this.query = query_parameters;
-            this.http_version = http_version;
-            if (request_type.equals(Request_Type.GET)) {
-                request = "GET /get" + query.getQuery_Parameter() + http_version.toString() + "\r\n";
-            }
-        }
-        //    another constructor of the Request for POST
-//    If request_Type is GET, then the Content_Type and Body should be empty.
-        public Request(Request_Type request_type, String content_type, HTTP_version http_version, Query_Parameters query_parameters, Body body)
-        {
-            this.body = body;
-            this.content_type = content_type;
-            this.query = query_parameters;
-            this.http_version = http_version;
 
-            if (request_type.equals(Request_Type.POST)) {
-                this.request = "POST /post" + query.getQuery_Parameter() + http_version.toString()
-                        + "Content-Type:" + this.content_type + "\r\n"
-                        + "Content-Length: " + body.getBodyLength() + "\r\n"
-                        + "\r\n" + body.getBodyContent();
+    }
+
+    public static void httpc(String path, String host, String type, String query, boolean isData, boolean isFile, boolean isVerbose, File file) {
+        try {
+            if (host == null || host.equals("")) {
+                host = "duckduckgo.com";
             }
-        }
-        public String getRequest () {
-            return request;
+
+            //https://stackoverflow.com/questions/2214308/add-header-in-http-request-in-java
+            if (type.equals("GET")) {
+                GET_METHOD(host, path);
+            } else if (type.equals("POST")) {
+                HTTP_METHOD(host, path, file, isData);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+//    public static Map < String, String > getQueryMap(String query) {
+//        String[] params = query.split("&");
+//        Map < String, String > map = new HashMap < String, String > ();
+//        for (String param: params) {
+//            String[] p = param.split("=");
+//            String name = p[0];
+//            if (p.length > 1) {
+//                String value = p[1];
+//                map.put(name, value);
+//            }
+//        }
+//        return map;
+//    }
+
+
 }
