@@ -60,6 +60,7 @@ public class RequestLibrary {
 		String keyValue = "";
 		String host = "";
 		String temp = "";
+		//System.out.println(arr.length);
 		for(int i = 0; i < arr.length; i++) {
 			if(arr[i].contains("http://httpbin.org/post")) {
 				host = arr[i];
@@ -74,27 +75,29 @@ public class RequestLibrary {
 				//System.out.println("entitybody: "+ entityBody);
 			}
 			if(arr[i].contains("1}")) {
-				entityBody = entityBody + arr[i];
-				entityBody = entityBody.substring(1, 19);
+				entityBody = entityBody + " " + arr[i];
+				entityBody = entityBody.substring(1, 18);
 				contentLength = entityBody.length();
 				//System.out.println("contentlength:" + contentLength+ "entitybody: " + entityBody);
-			}	
-			keyValue = keyValue + "Content-Length: " + contentLength;
-			
-			socket = new Socket("httpbin.org", PORT);
-			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			writer = new PrintWriter(socket.getOutputStream());
-			//add host name as header:key
-			writer.write("POST " + "/post " +(String) VERSION+ "\r\n" + keyValue  +"\r\n\r\n" + entityBody);
-			writer.flush();
-			while((temp = reader.readLine()) != null) {
-				System.out.println(temp);
 			}
-			writer.close();
-			reader.close();
-			socket.close();
 		}
+		keyValue = keyValue + "\nContent-Length: " + contentLength;
+		//System.out.println("Keyvalue: "+ keyValue);
+		socket = new Socket("httpbin.org", PORT);
+		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		writer = new PrintWriter(socket.getOutputStream());
+		//add host name as header:key
+		writer.write("POST " + "/post " +(String) VERSION+ "\r\n" + keyValue  +"\r\n\r\n" + entityBody);
+		writer.flush();
+		while((temp = reader.readLine()) != null) {
+			System.out.println(temp);
+		}
+		writer.close();
+		reader.close();
+		socket.close();
 	}
+			
+	
 	
 	public void postFile(String host, File file) throws Exception{
 		
