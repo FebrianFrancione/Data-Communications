@@ -1,32 +1,17 @@
 import java.net.Socket;
-//import net
-//import io
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-import java.io.BufferedReader;
-import java.io.Console;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.util.Map;
-import java.io.IOException;
-
-
-import java.io.File;
-import java.io.FileReader;
+import java.util.concurrent.TimeUnit;
 
 
 
 class Httpclient {
 
-    private static File filename;
-    private final static String HTTP_METHOD_GET = "GET";
-    private final static String HTTP_METHOD_POST = "POST";
+    private static File file_name;
+    private final static String HTTP_GET = "GET";
+    private final static String HTTP_POST = "POST";
 
 //    initializing all cmd additional commands to false, which will be modified when called.
     private static boolean patternCheck, cmd_verbose,cmd_data,cmd_file,cmd_header=false;
@@ -237,25 +222,25 @@ class Httpclient {
                     //cmd -f
                     if(matcher.group(9) != null){
                         cmd_file = true;
-                        filename = new File(matcher.group(10));
+                        file_name = new File(matcher.group(10));
                     }else{
                         cmd_file = false;
                     }
 
                     //Additional check GET method for cURL
-                    if (match_type.equals(HTTP_METHOD_GET) && (cmd_data || cmd_file)) {
+                    if (match_type.equals(HTTP_GET) && (cmd_data || cmd_file)) {
                         patternCheck = false;
                         System.out.println("-f and -d cannot be combined in GET!");
                         continue;
                     }
                     //Additional check on POST method for cURL
-                    if (match_type.equals(HTTP_METHOD_POST) && cmd_data && cmd_file) {
+                    if (match_type.equals(HTTP_POST) && cmd_data && cmd_file) {
                         patternCheck = false;
                         System.out.println("-f and -d cannot be combined in POST!");
                         continue;
                     }
                     System.out.println("User input has been processed, sending info to httpc");
-                    httpc(path, host, match_type, null, cmd_data, cmd_file, cmd_verbose, filename);
+                    httpc(path, host, match_type, null, cmd_data, cmd_file, cmd_verbose, file_name);
                 } else {
                     System.out.println("Invalid Input!");
                 }
