@@ -371,6 +371,7 @@ class Httpclient {
 //                    calling the http client method, sending the now processed parameters.
                     HTTPC_client_method(path, host, match_type, cmd_data, file_name);
                 } else {
+//                    printing invalid input if command fails
                     System.out.println("Invalid Input!");
                 }
             }
