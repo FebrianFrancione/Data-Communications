@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 public class RequestLibrary {
 	private final int PORT  = 80;
 	private final String VERSION = "HTTP/1.0";
-	private final String USER_AGENT = "MyAwesomeBrowser";
+	private final String USER_AGENT = "USER-AGENT: MyAwesomeBrowser";
 	private BufferedReader reader;
 	private PrintWriter writer;
 	private Scanner scanner;
@@ -17,12 +17,11 @@ public class RequestLibrary {
 	public void get(String host) throws Exception {
 		String temp;
 		int skip = 0;
-		socket = new Socket(host, PORT);
+		url = new URL(host);
+		socket = new Socket(url.getHost(), PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
-		//add host name as header:key
-		//use url.host() after splitting // in the passed argument
-		writer.write("GET " + "/get?course=networking&assignment=1 " +(String) VERSION+ "\r\n" +"User-Agent:" + USER_AGENT+ "\r\n\r\n");
+		writer.write("GET " + url.getFile() + " "+ (String) VERSION+ "\r\n" + USER_AGENT+ "\r\n\r\n");
 		writer.flush();
 		while ((temp = reader.readLine()) != null) {
 			if(skip > 8) {
@@ -32,17 +31,19 @@ public class RequestLibrary {
 				skip ++;
 			}
 		}
+		writer.close();
+		reader.close();
+		socket.close();
 	}
 	
 	//Get with verbose
 	public void getWVerbose(String host) throws Exception {
 		String temp;
-		//url = new URL(host);
-		socket = new Socket(host, PORT);
+		url = new URL(host);
+		socket = new Socket(url.getHost(), PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
-		//add host name as header:key
-		writer.write("GET " + "/get?course=networking&assignment=1 " +(String) VERSION+ "\r\n" +"User-Agent:" + USER_AGENT+ "\r\n\r\n");
+		writer.write("GET " + url.getFile() + " " +(String) VERSION+ "\r\n" + USER_AGENT+ "\r\n\r\n");
 		writer.flush();
 		while((temp = reader.readLine()) != null) {
 			System.out.println(temp);
@@ -76,17 +77,16 @@ public class RequestLibrary {
 			}
 			if(arr[i].contains("1}")) {
 				entityBody = entityBody + " " + arr[i];
+				//to remove single quote
 				entityBody = entityBody.substring(1, 18);
 				contentLength = entityBody.length();
 				//System.out.println("contentlength:" + contentLength+ "entitybody: " + entityBody);
 			}
 		}
 		keyValue = keyValue + "\nContent-Length: " + contentLength;
-		//System.out.println("Keyvalue: "+ keyValue);
 		socket = new Socket("httpbin.org", PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
-		//add host name as header:key
 		writer.write("POST " + "/post " +(String) VERSION+ "\r\n" + keyValue  +"\r\n\r\n" + entityBody);
 		writer.flush();
 		while((temp = reader.readLine()) != null) {
@@ -97,16 +97,16 @@ public class RequestLibrary {
 		socket.close();
 	}
 			
-	
-	
 	public void postFile(String host, File file) throws Exception{
+		
 		
 	}
 	
 	public void help() {
-		System.out.println("httpc is a curl-like application but supports HTTP protocol only.\nUsage:\n" + "httpc command [arguments]\n" + "The commands are:\n" + 
-				"get executes a HTTP GET request and prints the response.\n post executes a HTTP POST request and prints the response.\n" + 
-				"help prints this screen.\n" +"Use \"httpc help [command]\" for more information about a command.\n");
+		System.out.println("httpc is a curl-like application but supports HTTP protocol only."+
+               "Usage: httpc command [arguments] The commands are:\n"+ "get executes a HTTP GET request and prints the response.\n"+ 
+			    "post executes a HTTP POST request and prints the response. help prints this screen.\n"+
+               "Use \"httpc help [command]\" for more information about a command.");
 	}
 	
 	public void helpGet(){
