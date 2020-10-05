@@ -263,13 +263,13 @@ class Httpclient {
             String body;
             String request = "";
 
-            //if cmd -h header is called
+            //cmd -h header is called
             if (string_header != "") {
+
                 String[] headersArray = string_header.split(" ");
                 for (int i = 0; i < headersArray.length; i++) {
                     pw2.println(headersArray[i]);
                 }
-
                 //Modify the string if necessary
                 for (String header: headersArray) {
                     if (header.contains("=")) {
@@ -278,10 +278,12 @@ class Httpclient {
                 }
             }
 
-            //If -d
+            //cmd -d data is called
             if(data){
-                System.out.println(data_string);
+                System.out.println("printing data string" + data_string);
+                System.out.println("printing data string substrings: ");
                 System.out.println(data_string.substring(1, data_string.length() - 1));
+//                request being filled with data string length and substring to be used.
                 request = "POST /post?info=info HTTP/1.0\r\n"
                         + "Content-Type:application/json\r\n"
                         + "Content-Length: " + data_string.length() +"\r\n"
@@ -289,72 +291,71 @@ class Httpclient {
                         + data_string.substring(1, data_string.length() - 1);
             }
 
-            //If -f
+            //cmd -f file is called
             else if (file != null) {
 
-                BufferedReader in = new BufferedReader(new FileReader(file));
+                BufferedReader br1 = new BufferedReader(new FileReader(file));
                 String line = "";
-                StringBuilder StringBuilder = new StringBuilder();
+                StringBuilder string_builder = new StringBuilder();
 
-                while ((line = in .readLine()) != null) {
+                while ((line = br1.readLine()) != null) {
                     String formattedLine = line.replaceAll("[\\{\\}]", "").replaceAll("\\s", "");
 
                     String[] linesArray = formattedLine.split(",");
                     for (int i = 0; i < linesArray.length; i++) {
-                        StringBuilder.append(linesArray[i]+",");
+                        string_builder.append(linesArray[i]+",");
                     }
-                    body = "{"+StringBuilder.toString().substring(0, StringBuilder.length() - 1)+"}";
+                    body = "{"+string_builder.toString().substring(0, string_builder.length() - 1)+"}";
                     request = "POST /post?info=info HTTP/1.0\r\n"
                             + "Content-Type:application/json\r\n"
                             + "Content-Length: " + body.length() +"\r\n"
                             + "\r\n"
                             + body;
 
-                } in .close();
+                }
+//                closing buffered reader
+                br1.close();
 
             }else{
-                //Must refactor to get data passed in query
+//                body being formatted to be put into query
                 body = "{"
                         + "\"DefaultAssignment\":1,"
                         + "\"DefaultCourse\": \"Networking\""
                         + "}";
-
+//request being formatted to be passed to query
                 request = "POST /post?info=info HTTP/1.0\r\n"
                         + "Content-Type:application/json\r\n"
                         + "Content-Length: " + body.length() +"\r\n"
                         + "\r\n"
                         + body;
             }
-
+//writing and flushing request bytes to be used
             outputStream.write(request.getBytes());
             outputStream.flush();
-
-
+//            flushing empty string
             pw2.println("");
             pw2.flush();
-
+//opening another buffered reader instance
             BufferedReader bufRead = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
             String outStr;
             String response = "";
-
             while ((outStr = bufRead.readLine()) != null) {
                 response += outStr + "\n";
             }
 
-            //Format output as needed
+            //Formatting output
             if (cmd_verbose == true) {
                 System.out.println(response);
             } else {
                 String[] responseFormatted = response.split("\n\n");
-
                 for (int i = 1; i < responseFormatted.length; i++)
                     System.out.println(responseFormatted[i]);
             }
 
-            //Close everything
+            //Close the instances of buffered reader, printwriter and socket.
             bufRead.close();
             pw2.close();
+            System.out.println("Socket closed!");
             socket.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -366,13 +367,13 @@ class Httpclient {
     public static void httpc_client_method(String path, String host, String type, String query, boolean isData, boolean isFile, boolean isVerbose, File file) {
         try {
             if (host == null || host.equals("")) {
-                host = "duckduckgo.com";
+                host = "www.httbin.org";
             }
-
-            //https://stackoverflow.com/questions/2214308/add-header-in-http-request-in-java
             if (type.equals("GET")) {
+                //sending httbin host to get
                 GET_METHOD(host, path);
             } else if (type.equals("POST")) {
+                //sending httbin host to POST
                 HTTP_METHOD(host, path, file, isData);
             }
 
@@ -380,20 +381,6 @@ class Httpclient {
             e.printStackTrace();
         }
     }
-
-//    public static Map < String, String > getQueryMap(String query) {
-//        String[] params = query.split("&");
-//        Map < String, String > map = new HashMap < String, String > ();
-//        for (String param: params) {
-//            String[] p = param.split("=");
-//            String name = p[0];
-//            if (p.length > 1) {
-//                String value = p[1];
-//                map.put(name, value);
-//            }
-//        }
-//        return map;
-//    }
 
 
 }
