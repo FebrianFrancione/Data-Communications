@@ -8,10 +8,10 @@ public class Httpc {
 			//just testing for now
 			RequestLibrary lib = new RequestLibrary();
 			lib.post("httpc post -h Content-Type:application/json -d '{\"Assignment\": 1}' http://httpbin.org/post");
-			String entry = " ";
-			Scanner scan = new Scanner(System.in);
+			//String entry = " ";
+			//Scanner scan = new Scanner(System.in);
 			//RequestLibrary lib = new RequestLibrary();
-			System.out.println("What command do you want to use: ");
+			/*System.out.println("What command do you want to use: ");
 			entry = scan.nextLine();
 			while(!entry.contains("Close")) {
 				if(entry.contains("get")) {
@@ -23,6 +23,6 @@ public class Httpc {
 				else {
 					lib.post(entry);
 				}
-			}
+			}*/
 	}
 }
