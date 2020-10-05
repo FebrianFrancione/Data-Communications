@@ -19,6 +19,7 @@ class Httpclient {
 //    initializing strings data and header:
     private static String data_string, string_header = "";
 
+//GET method
     public static void GET_METHOD(String host, String path){
         try {
             //initializing string output and response
@@ -99,162 +100,8 @@ class Httpclient {
             e.printStackTrace();
         }
     }
-
-    //Displays the help menu
-    public static void cmd_help(String cmd_help_option) {
-        if (cmd_help_option.equals("get")) {
-            System.out.println(
-                    "Usage: httpc get [-v] [-h key:value] URL\n"
-                            + "\r\n"
-                            + "Get executes a HTTP GET request for a given URL"
-                            + "\r\n"
-                            + "\t -v		    Prints the detail of the response such as protocol, status and headers.\n"
-                            + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
-            );
-        } else if (cmd_help_option.equals("post")) {
-            System.out.println(
-                    "Usage: httpc httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
-                            + "\r\n"
-                            + "httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
-                            + "\r\n"
-                            + "\t -v			Prints the detail of the response such as protocol, status and headers.\n"
-                            + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
-                            + "\t -d string		Associates an inline data to the body HTTP POST request.\n"
-                            + "\t -f file		Associates the content of a file to the body HTTP POSTrequest.\n"
-                            + "\r\n"
-                            + "Either [-d] or [-f] can be used but not both."
-            );
-        } else{
-            System.out.println("httpc is a curl-like application but supports HTTP protocol only.\n"
-                    + "Usage:\n"
-                    + "\t httpc command [arguments]\n"
-                    + "The commands are:\n"
-                    + "\t get     executes a HTTP GET request and prints the response.\n"
-                    + "\t post    executes a HTTP POST request and prints the response.\n"
-                    + "\t help    prints this screen.\n"
-                    + "Use \"httpc help [command]\" for more information about a command."
-            );
-        }
-    }
-
-    public static void main(String[] args) {
-        String value;
-        Console console = System.console();
-        if (console == null) {
-            System.out.println("Enter your terminal to be able to access the command line");
-            System.out.println("Basic troubleshooting: In terminal, enter the cd src directory, then enter \" Javac HTTPclient.java \" and finally enter \" Java Httpclient\". This will allow you to access the rest of the program.");
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.exit(0);
-        }
-        System.out.println("Assignment 1: Febrian Francione 40049253, ");
-        //HTTP client
-        while (patternCheck != true) {
-            System.out.println("Command Line Menu");
-            System.out.println("Enter \"1\" to open help options");
-            System.out.println("Enter \"2\" to open the httpc functions");
-            String option = console.readLine();
-//            Menu functions
-            if (option.equals("1")) {
-                System.out.println("Enter \"help\" for default help");
-                System.out.println("Enter \"get\" for get help");
-                System.out.println("Enter \"post\" for post help");
-                System.out.println("Enter anything else to return to the main menu");
-                String cmd_help_option = console.readLine();
-
-                if(cmd_help_option.equals("help") || cmd_help_option.equals("get") || cmd_help_option.equals("post")) {
-                    System.out.println("You have entered: " + cmd_help_option);
-//                    calling the cmd_help method to return appropriate response based off user's input
-                    cmd_help(cmd_help_option);
-                    System.out.println("Return to Main Menu? (Enter any key)");
-                    console.readLine();
-                }
-                else {
-                    continue;
-                }
-            } else if(option.equals("2")) {
-                value = console.readLine("Enter HTTP function (Enter \"exit\" to return to Command Line Menu): ");
-                //Exit if the value entered is 0
-                if (value.equals("0")) {
-                    continue;
-                }
-                //separate entities grouped within parenthesis. Seperating with regex to be worked on in following if loops
-                Pattern http_pattern = Pattern.compile("httpc(\\s+(get|post))((\\s+-v)?(\\s+-h\\s+([^\\s]+))?(\\s+-d\\s+('.+'))?(\\s+-f\\s+([^\\s]+))?)(\\s+'((http[s]?:\\/\\/www\\.|http[s]?:\\/\\/|www\\.)?([^\\/]+)(\\/.+)?)'*)");
-                Matcher matcher = http_pattern.matcher(value);
-                if (matcher.find()) {
-                    patternCheck = true;
-                    //setting post/get to uppercase: GET/POST
-                    String match_type = matcher.group(2);
-                    match_type = match_type.toUpperCase();
-                    //Assign the path if not empty
-                    String path = "";
-                    if (matcher.group(15) != null) {
-                        path = matcher.group(15).replaceAll("'", "");
-                        path = path.trim();
-                    }
-                    //Trimming the host
-                    String host = matcher.group(14).replaceAll("'", "");
-                    host = host.trim();
-
-                    //Additional check GET method for cURL
-                    if (match_type.equals(HTTP_GET) && (cmd_data || cmd_file)) {
-                        patternCheck = false;
-                        System.out.println("-f and -d cannot be combined in GET!");
-                        continue;
-                    }
-                    //Additional check on POST method for cURL
-                    if (match_type.equals(HTTP_POST) && cmd_data && cmd_file) {
-                        patternCheck = false;
-                        System.out.println("-f and -d cannot be combined in POST!");
-                        continue;
-                    }
-//                    cmd additional commands to be used with cmd
-                    //cmd -v
-                    if (matcher.group(4) != null){
-                        cmd_verbose = true;
-                    }else{
-                        cmd_verbose = false;
-                    }
-                    //cmd-h
-                    if(matcher.group(5) != null){
-                        cmd_header = true;
-                        string_header = matcher.group(6);
-                    }else{
-                        cmd_header = false;
-                    }
-                    //cmd -d
-                    if(matcher.group(7) != null){
-                        cmd_data = true;
-                        data_string = matcher.group(8);
-                    }else{
-                        cmd_data = false;
-                    }
-                    //cmd -f
-                    if(matcher.group(9) != null){
-                        cmd_file = true;
-                        file_name = new File(matcher.group(10));
-                    }else{
-                        cmd_file = false;
-                    }
-                    System.out.println("User input has been processed, sending info to httpc");
-//                    calling the http client method, sending the now processed parameters.
-                    httpc_client_method(path, host, match_type, null, cmd_data, cmd_file, cmd_verbose, file_name);
-                } else {
-                    System.out.println("Invalid Input!");
-                }
-            }
-            else  {
-                System.out.println("System exiting...");
-                System.exit(0);
-            }
-        }
-    }
-
-
-    public static void HTTP_METHOD(String host, String path, File file, boolean data) {
+//    POST method
+    public static void POST_METHOD(String host, String path, File file, boolean data) {
         try {
             //Initialize the socket, port 80
             Socket socket = new Socket(host, 80);
@@ -364,7 +211,164 @@ class Httpclient {
 
     }
 
-    public static void httpc_client_method(String path, String host, String type, String query, boolean isData, boolean isFile, boolean isVerbose, File file) {
+    //Displays the help menu
+    public static void cmd_help(String cmd_help_option) {
+        if (cmd_help_option.equals("get")) {
+            System.out.println(
+                    "Usage: httpc get [-v] [-h key:value] URL\n"
+                            + "\r\n"
+                            + "Get executes a HTTP GET request for a given URL"
+                            + "\r\n"
+                            + "\t -v		    Prints the detail of the response such as protocol, status and headers.\n"
+                            + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
+            );
+        } else if (cmd_help_option.equals("post")) {
+            System.out.println(
+                    "Usage: httpc httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
+                            + "\r\n"
+                            + "httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\n"
+                            + "\r\n"
+                            + "\t -v			Prints the detail of the response such as protocol, status and headers.\n"
+                            + "\t -h key:value	Associates headers to HTTP Request with the format 'key:value'.\n"
+                            + "\t -d string		Associates an inline data to the body HTTP POST request.\n"
+                            + "\t -f file		Associates the content of a file to the body HTTP POSTrequest.\n"
+                            + "\r\n"
+                            + "Either [-d] or [-f] can be used but not both."
+            );
+        } else{
+            System.out.println("httpc is a curl-like application but supports HTTP protocol only.\n"
+                    + "Usage:\n"
+                    + "\t httpc command [arguments]\n"
+                    + "The commands are:\n"
+                    + "\t get     executes a HTTP GET request and prints the response.\n"
+                    + "\t post    executes a HTTP POST request and prints the response.\n"
+                    + "\t help    prints this screen.\n"
+                    + "Use \"httpc help [command]\" for more information about a command."
+            );
+        }
+    }
+
+    public static void main(String[] args) {
+        String value;
+        Console console = System.console();
+        if (console == null) {
+            System.out.println("Enter your terminal to be able to access the command line");
+            System.out.println("Basic troubleshooting: In terminal, enter the cd src directory, then enter \" Javac HTTPclient.java \" and finally enter \" Java Httpclient\". This will allow you to access the rest of the program.");
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.exit(0);
+        }
+        System.out.println("Assignment 1: Febrian Francione 40049253, ");
+        //HTTP client
+        while (patternCheck != true) {
+            System.out.println("Command Line Menu");
+            System.out.println("Enter \"1\" to open help options");
+            System.out.println("Enter \"2\" to open the httpc functions");
+            String option = console.readLine();
+//            Menu functions
+            if (option.equals("1")) {
+                System.out.println("Enter \"help\" for default help");
+                System.out.println("Enter \"get\" for get help");
+                System.out.println("Enter \"post\" for post help");
+                System.out.println("Enter anything else to return to the main menu");
+                String cmd_help_option = console.readLine();
+
+                if(cmd_help_option.equals("help") || cmd_help_option.equals("get") || cmd_help_option.equals("post")) {
+                    System.out.println("You have entered: " + cmd_help_option);
+//                    calling the cmd_help method to return appropriate response based off user's input
+                    cmd_help(cmd_help_option);
+                    System.out.println("Return to Main Menu? (Enter any key)");
+                    console.readLine();
+                }
+                else {
+                    continue;
+                }
+            } else if(option.equals("2")) {
+                value = console.readLine("Enter HTTP function (Enter \"exit\" to return to Command Line Menu): ");
+                //Exit if the value entered is 0
+                if (value.equals("0")) {
+                    continue;
+                }
+                //separate entities grouped within parenthesis. Seperating with regex to be worked on in following if loops
+                Pattern http_pattern = Pattern.compile("httpc(\\s+(get|post))((\\s+-v)?(\\s+-h\\s+([^\\s]+))?(\\s+-d\\s+('.+'))?(\\s+-f\\s+([^\\s]+))?)(\\s+'((http[s]?:\\/\\/www\\.|http[s]?:\\/\\/|www\\.)?([^\\/]+)(\\/.+)?)'*)");
+                Matcher matcher = http_pattern.matcher(value);
+                if (matcher.find()) {
+                    patternCheck = true;
+                    //setting post/get to uppercase: GET/POST
+                    String match_type = matcher.group(2);
+                    match_type = match_type.toUpperCase();
+                    //Assign the path if not empty
+                    String path = "";
+                    if (matcher.group(15) != null) {
+                        path = matcher.group(15).replaceAll("'", "");
+                        path = path.trim();
+                    }
+                    //Trimming the host
+                    String host = matcher.group(14).replaceAll("'", "");
+                    host = host.trim();
+
+                    //Additional check GET method for cURL
+                    if ((cmd_data || cmd_file) && match_type.equals(HTTP_GET)) {
+                        patternCheck = false;
+                        System.out.println("Patterncheck set to false for GET");
+                        System.out.println("-f and -d cannot be combined in GET!");
+                        continue;
+                    }
+                    //Additional check on POST method for cURL
+                    if (cmd_data && cmd_file && match_type.equals(HTTP_POST)) {
+                        patternCheck = false;
+                        System.out.println("Patterncheck set to false for POST");
+                        System.out.println("-f and -d cannot be combined in POST!");
+                        continue;
+                    }
+//                    cmd additional commands to be used with cmd
+                    //cmd -v
+                    if (matcher.group(4) != null){
+                        cmd_verbose = true;
+                    }else{
+                        cmd_verbose = false;
+                    }
+                    //cmd-h
+                    if(matcher.group(5) != null){
+                        cmd_header = true;
+                        string_header = matcher.group(6);
+                    }else{
+                        cmd_header = false;
+                    }
+                    //cmd -d
+                    if(matcher.group(7) != null){
+                        cmd_data = true;
+                        data_string = matcher.group(8);
+                    }else{
+                        cmd_data = false;
+                    }
+                    //cmd -f
+                    if(matcher.group(9) != null){
+                        cmd_file = true;
+                        file_name = new File(matcher.group(10));
+                    }else{
+                        cmd_file = false;
+                    }
+                    System.out.println("User input has been processed, sending info to httpc");
+//                    calling the http client method, sending the now processed parameters.
+                    httpc_client_method(path, host, match_type, cmd_data, cmd_file, cmd_verbose, file_name);
+                } else {
+                    System.out.println("Invalid Input!");
+                }
+            }
+            else  {
+                System.out.println("System exiting...");
+                System.exit(0);
+            }
+        }
+    }
+
+
+
+    public static void httpc_client_method(String path, String host, String type, boolean isData, boolean isFile, boolean isVerbose, File file) {
         try {
             if (host == null || host.equals("")) {
                 host = "www.httbin.org";
@@ -374,13 +378,11 @@ class Httpclient {
                 GET_METHOD(host, path);
             } else if (type.equals("POST")) {
                 //sending httbin host to POST
-                HTTP_METHOD(host, path, file, isData);
+                POST_METHOD(host, path, file, isData);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
 }
