@@ -2,26 +2,53 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.io.*;
 import java.net.URL;
+import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RequestLibrary {
 	private final int PORT  = 80;
 	private final String VERSION = "HTTP/1.0";
 	private final String USER_AGENT = "USER-AGENT: MyAwesomeBrowser";
+	Pattern pattern;
+    Matcher matcher;
 	private BufferedReader reader;
 	private PrintWriter writer;
 	private Scanner scanner;
 	private Socket socket;
 	private URL url;
+	private URI uri;
 	
 	public void get(String host) throws Exception {
 		String temp;
 		int skip = 0;
-		url = new URL(host);
-		socket = new Socket(url.getHost(), PORT);
+		//url = new URL(host);		
+		//System.out.println(url.getHost() + "  hello " + url.getFile());
+		String keyVal = "";
+		String[] arr = host.split(" ");
+		uri = new URI(arr[arr.length - 1]);
+		//System.out.println(arr.length );
+		for(int i = 0; i<arr.length; i++) {
+			if(arr[i].equals("-h")) {
+				//System.out.println(arr[i+1].substring(0,1).equals("\""));	
+				if(arr[i+1].substring(0,1).equals("\"")) {
+					//if  key value exists
+					//System.out.println(keyVal + "dsjjjd");	
+					keyVal = keyVal + arr[i+1] + "\r\n";
+					//System.out.println(keyVal + "1");	
+					keyVal = keyVal.replace("\"", "");
+					//System.out.println(keyVal + "2");	
+					//System.out.println(keyVal);	
+				}
+			}
+		}
+		//System.out.println(keyVal);
+		//System.out.println(uri.getQuery() +" hello "+ uri.getHost() + url.getHost() +" fdf "+ uri.getPath() + "   gfg  " + url.getFile());
+		socket = new Socket(uri.getHost(), PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
-		writer.write("GET " + url.getFile() + " "+ (String) VERSION+ "\r\n" + USER_AGENT+ "\r\n\r\n");
+		writer.write("GET " + uri.toURL().getFile() + " "+ (String) VERSION+ "\r\n" + USER_AGENT+ "\r\n" + keyVal+ "\r\n\r\n");
 		writer.flush();
 		while ((temp = reader.readLine()) != null) {
 			if(skip > 8) {
@@ -39,11 +66,29 @@ public class RequestLibrary {
 	//Get with verbose
 	public void getWVerbose(String host) throws Exception {
 		String temp;
-		url = new URL(host);
-		socket = new Socket(url.getHost(), PORT);
+		//url = new URL(host);
+		String keyVal = "";
+		String[] arr = host.split(" ");
+		uri = new URI(arr[arr.length - 1]);
+		//System.out.println(arr.length );
+		for(int i = 0; i<arr.length; i++) {
+			if(arr[i].equals("-h")) {
+				//System.out.println(arr[i+1].substring(0,1).equals("\""));	
+				if(arr[i+1].substring(0,1).equals("\"")) {
+					//if  key value exists
+					//System.out.println(keyVal + "dsjjjd");	
+					keyVal = keyVal + arr[i+1] + "\r\n";
+					//System.out.println(keyVal + "1");	
+					keyVal = keyVal.replace("\"", "");
+					//System.out.println(keyVal + "2");	
+					//System.out.println(keyVal);	
+				}
+			}
+		}
+		socket = new Socket(uri.getHost(), PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
-		writer.write("GET " + url.getFile() + " " +(String) VERSION+ "\r\n" + USER_AGENT+ "\r\n\r\n");
+		writer.write("GET " + uri.toURL().getFile() + " "+ (String) VERSION+ "\r\n" + USER_AGENT+ "\r\n" + keyVal+ "\r\n\r\n");
 		writer.flush();
 		while((temp = reader.readLine()) != null) {
 			System.out.println(temp);
