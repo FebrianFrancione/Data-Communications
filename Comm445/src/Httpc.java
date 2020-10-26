@@ -32,7 +32,8 @@ public class Httpc {
 				}
 				//for post
 				else {
-					
+					//lib.post("post -h \"Content-Type:application/json\" -d '{\"Assignment\": 1}' http://httpbin.org/post");
+					lib.post("post -d \"hello  there\"  http://httpbin.org/post");
 				}
 				System.out.println("Connection Stopped");
 				entry = "Close";
