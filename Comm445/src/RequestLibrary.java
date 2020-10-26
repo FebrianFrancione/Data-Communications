@@ -34,12 +34,8 @@ public class RequestLibrary {
 				//System.out.println(arr[i+1].substring(0,1).equals("\""));	
 				if(arr[i+1].substring(0,1).equals("\"")) {
 					//if  key value exists
-					//System.out.println(keyVal + "dsjjjd");	
 					keyVal = keyVal + arr[i+1] + "\r\n";
-					//System.out.println(keyVal + "1");	
-					keyVal = keyVal.replace("\"", "");
-					//System.out.println(keyVal + "2");	
-					//System.out.println(keyVal);	
+					keyVal = keyVal.replace("\"", "");	
 				}
 			}
 		}
@@ -76,12 +72,8 @@ public class RequestLibrary {
 				//System.out.println(arr[i+1].substring(0,1).equals("\""));	
 				if(arr[i+1].substring(0,1).equals("\"")) {
 					//if  key value exists
-					//System.out.println(keyVal + "dsjjjd");	
 					keyVal = keyVal + arr[i+1] + "\r\n";
-					//System.out.println(keyVal + "1");	
-					keyVal = keyVal.replace("\"", "");
-					//System.out.println(keyVal + "2");	
-					//System.out.println(keyVal);	
+					keyVal = keyVal.replace("\"", "");	
 				}
 			}
 		}
@@ -100,51 +92,67 @@ public class RequestLibrary {
 	
 	//post with inline
 	public void post(String post) throws Exception {
-		String[] arr = post.split(" ");
+		pattern = Pattern.compile(".*-v.*");
+		matcher = pattern.matcher(post);
 		int contentLength = 0;
 		String entityBody = "";
 		String keyValue = "";
 		String host = "";
 		String temp = "";
-		//System.out.println(arr.length);
+		int skip = 0;
+		String arr[] = post.split(" ");
+		uri = new URI(arr[arr.length - 1]);
+		host = uri.getHost();
+		//System.out.println(uri.toURL().getFile());
 		for(int i = 0; i < arr.length; i++) {
-			if(arr[i].contains("http://httpbin.org/post")) {
-				host = arr[i];
-				host = host.substring(7,18);
-				//System.out.println("host: " + host);
+			//System.out.println(arr[i] + " arr[i] " +  arr.length);
+			if(arr[i].equals("-h")) {
+				if(arr[i+1].substring(0,1).equals("\"")) {
+					//if  key value exists
+					keyValue = keyValue + arr[i+1] + "\r\n";
+					keyValue = keyValue.replace("\"", "");	
+					System.out.println(keyValue);
+				}
 			}
-			if(arr[i].contains("-h")) {
-				keyValue = keyValue + arr[i+1];
-				//System.out.println("keyval: " + keyValue);
-			}
-			if(arr[i].contains("-d")) {
-				entityBody = entityBody + arr[i+1];
-				//System.out.println("entitybody: "+ entityBody);
-			}
-			if(arr[i].contains("1}")) {
-				entityBody = entityBody + " " + arr[i];
-				//to remove single quote
-				entityBody = entityBody.substring(1, 18);
-				contentLength = entityBody.length();
-				//System.out.println("contentlength:" + contentLength+ "entitybody: " + entityBody);
+			else if(arr[i].equals("-d")) {
+				for(int j = i+1; j < arr.length; j++) {
+					if(!arr[j].equals(arr[arr.length - 1])) {
+						entityBody = entityBody + " "+ arr[j];
+						entityBody = entityBody.replace("'", "");
+					}
+				}
 			}
 		}
-		keyValue = keyValue + "\nContent-Length: " + contentLength;
+		entityBody = entityBody.substring(1, entityBody.length());
+		contentLength = entityBody.length();
+		keyValue = keyValue + "Content-Length: " + contentLength;
 		socket = new Socket(host, PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
-		writer.write("POST " + "/post " +(String) VERSION+ "\r\n" + keyValue  +"\r\n\r\n" + entityBody);
+		writer.write("POST " + uri.toURL().getFile()+ " " +(String) VERSION+ "\r\n" + keyValue+ "\r\n\r\n" + entityBody);
 		writer.flush();
-		while((temp = reader.readLine()) != null) {
-			System.out.println(temp);
+		if(matcher.find() == true) {
+			while((temp = reader.readLine()) != null) {
+				System.out.println(temp);
+			}
+		}
+		else{
+			while ((temp = reader.readLine()) != null) {
+				if(skip > 8) {
+					System.out.println(temp);
+				}
+				else {
+					skip ++;
+				}
+			}
 		}
 		writer.close();
 		reader.close();
 		socket.close();
 	}
-			
+	
 	public void postFile(String host, File file) throws Exception{
-		
+		//the code from local src file local445 crashes the entire thing figure out why
 		
 	}
 	
