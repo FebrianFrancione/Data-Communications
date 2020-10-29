@@ -68,6 +68,15 @@ public class RequestLibrary {
         this.content_length = content_length;
     }
 
+    //constructor
+    public RequestLibrary(String method, String request, String http_version, String body, int content_length) {
+        this.method = method;
+        this.request = request;
+        this.http_version = http_version;
+        this.body = body;
+        this.content_length = content_length;
+    }
+
     @Override
     public String toString() {
         return method + " " + request + " " + http_version + "\n" +
