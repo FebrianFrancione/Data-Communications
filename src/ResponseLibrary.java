@@ -8,8 +8,8 @@ public class ResponseLibrary {
 
 
     //response method components
-    private String date, status, http_version, content_type, body;
-    private int content_length;
+    public String date, status, http_version, content_type, body;
+    public int content_length;
 
     public String getDate() {
         return date;
@@ -59,6 +59,17 @@ public class ResponseLibrary {
         this.content_length = content_length;
     }
 
+    //default
+
+    public ResponseLibrary(String date, String status, String http_version, String content_type, String body, int content_length) {
+        this.date = date;
+        this.status = status;
+        this.http_version = http_version;
+        this.content_type = content_type;
+        this.body = body;
+        this.content_length = content_length;
+    }
+
     @Override
     public String toString() {
         return http_version + " " + status + "\r\n" +
@@ -72,4 +83,6 @@ public class ResponseLibrary {
 
 
     }
+
+
 }
