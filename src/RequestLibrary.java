@@ -5,8 +5,6 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.io.*;
 import java.net.URL;
-import java.net.UnknownHostException;
-
 public class RequestLibrary {
 
     private final int PORT  = 80;
@@ -18,51 +16,63 @@ public class RequestLibrary {
     private Socket socket;
     private URL url;
 
-    public static final String GET= "GET";
-    public static final String POST = "POST";
+
 
     //request method components
     private String method, request, http_version, body;
     private int content_length;
 
     // Getter amd setter
-    public String getMethod(){
+
+    public String getMethod() {
         return method;
     }
 
-    public void setMethod(String method){
+    public void setMethod(String method) {
         this.method = method;
     }
 
-    public String getRequest(){
+    public String getRequest() {
         return request;
     }
-    public void setRequest(String URI){
-        this.request = URI;
+
+    public void setRequest(String request) {
+        this.request = request;
     }
 
-    public String getHttp_version(){
+    public String getHttp_version() {
         return http_version;
     }
 
-    public void setHttp_version(String version){
-        this.http_version = version;
+    public void setHttp_version(String http_version) {
+        this.http_version = http_version;
     }
 
-    public String getBody(){
+    public String getBody() {
         return body;
     }
-    public void setBody(String body){
+
+    public void setBody(String body) {
         this.body = body;
     }
 
-    public int getContent_length(){
+    public int getContent_length() {
         return content_length;
     }
-    public void setContent_length(int content_length){
+
+    public void setContent_length(int content_length) {
         this.content_length = content_length;
     }
-//    public static class request_assembler {
+
+    @Override
+    public String toString() {
+        return method + " " + request + " " + http_version + "\n" +
+                "Content-Length: " + content_length + "\n" +
+                "\n" +
+                ((content_length > 0 && body != null)? body : "" );
+    }
+
+    //    public static class request_assembler {
 //        String method, request, http_version, body;
 //        int content_length;
 //
