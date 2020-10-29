@@ -4,7 +4,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Httpc {
-
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 			RequestLibrary lib = new RequestLibrary();
