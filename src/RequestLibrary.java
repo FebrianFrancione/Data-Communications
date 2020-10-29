@@ -5,6 +5,9 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.io.*;
 import java.net.URL;
+//public interface HTTPRequest{
+//    ResponseLibrary handle_request(ResponseLibrary http_request);
+//}
 public class RequestLibrary {
 
     private final int PORT  = 80;
@@ -15,7 +18,8 @@ public class RequestLibrary {
     private Scanner scanner;
     private Socket socket;
     private URL url;
-
+    public static final String GET= "GET";
+    public static final String POST = "POST";
 
 
     //request method components

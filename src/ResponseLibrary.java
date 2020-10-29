@@ -1,4 +1,5 @@
 public class ResponseLibrary {
+    // can be merged wit request library? under "Responses"
     public static final String status_200 = "200: OK";
     public static final String status_201 = "201: Created";
     public static final String status_400 = "400: Bad request";
