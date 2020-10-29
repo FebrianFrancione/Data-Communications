@@ -7,8 +7,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 
-class HeaderRequestException extends Exception{
-    public HeaderRequestException(String message){
+class HeaderException extends Exception{
+    public HeaderException(String message){
+        super(message);
+    }
+}
+class RequestException extends Exception{
+    public RequestException(String message){
         super(message);
     }
 }
@@ -58,8 +63,10 @@ public class server{
                     //do extract and enter the 6 vaariables
                     http_response = requestHandler.handleRequest(http_request);
 //                    http_response = http_request.getMethod(),http_request.getRequest(),http_request.getHttp_version(),http_request.getBody(),http_request.getContent_length()
-                }catch (HeaderRequestException e){
+                }catch (HeaderException e){
                     http_response = error_response(ResponseLibrary.status_500, e.getMessage());
+                }catch(RequestException e){
+                    http_response = error_response(ResponseLibrary.status_400, e.getMessage());
                 }
                 // need to seperate erros to get a secodn error for400 bad request
                 out.print(http_response.toString());
@@ -71,7 +78,7 @@ public class server{
     }
 
     //    private RequestLibrary extractRequest(BufferedReader in) throws HttpRequestFormatException, HeaderIOException{
-    private RequestLibrary extractRequest(BufferedReader in) throws HeaderRequestException{
+    private RequestLibrary extractRequest(BufferedReader in) throws HeaderException, RequestException{
         ArrayList<String> headerLines;
         try{
             boolean justReadCRLF = false;
@@ -107,15 +114,15 @@ public class server{
 //            headerLines = getHeader(in);
         }catch(IOException e){
             System.out.println("Could not extract HTTP header");
-            throw new HeaderRequestException("Request Header is ill-formed\n");
+            throw new HeaderException("Request Header is ill-formed\n");
         }
         // parse header lines
-        if(headerLines.isEmpty()) throw new HeaderRequestException("Request Header is ill-formed\n");
+        if(headerLines.isEmpty()) throw new HeaderException("Request Header is ill-formed\n");
 
 
         String[]requestLineArgs = headerLines.get(0).split("\\s+");
         if(requestLineArgs.length != 3){
-            throw new HeaderRequestException("request ill formed (three header objects required): " + headerLines.get(0) + "\n");
+            throw new RequestException("request ill formed (three header objects required): " + headerLines.get(0) + "\n");
         }
 
         String method = requestLineArgs[0];
@@ -125,14 +132,14 @@ public class server{
         //todo
         //replace with sout
         if(!httpVersion.equalsIgnoreCase(HTTP_VERSION)){
-            throw new HeaderRequestException("Unsupported version: " + httpVersion);
+            throw new RequestException("Unsupported version: " + httpVersion);
         }
         if(!requestURI.matches("^/.*")){
-            throw new HeaderRequestException("Wrong format for URI path: " + requestURI);
+            throw new RequestException("Wrong format for URI path: " + requestURI);
         }
 
         if(!method.equalsIgnoreCase(RequestLibrary.GET) && !method.equalsIgnoreCase(RequestLibrary.POST)){
-            throw new HeaderRequestException("wrong mehtod: " + method);
+            throw new RequestException("wrong mehtod: " + method);
         }
 
         //parsing header lines
@@ -151,7 +158,7 @@ public class server{
         }
 
         if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
-            throw new HeaderRequestException("No content length for POST");
+            throw new RequestException("No content length for POST");
         }
 
         String entityBody = null;
@@ -172,7 +179,7 @@ public class server{
 
                 entityBody =  sb.toString();
             } catch (IOException e) {
-                throw new HeaderRequestException("Problem reading the entity body.\n");
+                throw new HeaderException("Problem reading the entity body.\n");
             }
         }
         return new RequestLibrary(method, requestURI, httpVersion, entityBody, content_length);
