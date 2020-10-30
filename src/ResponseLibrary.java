@@ -62,7 +62,7 @@ public class ResponseLibrary {
 
     //default
 
-    public ResponseLibrary(String date, String status, String http_version, String content_type, String body, int content_length) {
+    public ResponseLibrary(String http_version,String status,String date, int content_length, String content_type, String body) {
         this.http_version = http_version;
         this.status = status;
         this.date = date;

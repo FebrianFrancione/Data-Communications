@@ -132,6 +132,7 @@ public class server{
                 }
             }
             headerLines = header;
+            System.out.println("extractRequest: HeaderLines: " + headerLines);
 //            headerLines = getHeader(in);
         }catch(IOException e){
             System.out.println("Could not extract HTTP header");
@@ -149,10 +150,12 @@ public class server{
         String method = requestLineArgs[0];
         String requestURI = requestLineArgs[1];
         String httpVersion = requestLineArgs[2];
+//        String user_agent = requestLineArgs[3];
         System.out.println("--------------");
         System.out.println("Method: " + method);
         System.out.println("URI: " + requestURI);
         System.out.println("HTTP: " + httpVersion);
+//        System.out.println("User-Agent: " + user_agent);
         System.out.println("--------------");
 
         //todo
@@ -279,7 +282,7 @@ public class server{
         int content_length = message.getBytes().length;
         DateTimeFormatter date = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
 //        ResponseLibrary test = new ResponseLibrary();
-        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), null, message, content_length);
+        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), content_length, message, "");
     }
 }
 

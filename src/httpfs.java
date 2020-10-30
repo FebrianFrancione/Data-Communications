@@ -88,10 +88,11 @@ public class httpfs implements HttpRequestHandler{
             String line;
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 sb.append(line + '\n');
-                System.out.println("httpfs sb: " + sb);
+                System.out.println("content of file: " + sb);
             }
+            System.out.println("Stringbuffer read contents: "+sb.toString());
             http_response = getResponse(ResponseLibrary.status_200, sb.toString());
-            System.out.println("httpresponse after get respoinse : " + http_response);
+            System.out.println("httpfs: httpresponse after get response : " + http_response);
         } catch (FileNotFoundException f){
             //http response
             http_response = server.error_response(ResponseLibrary.status_500, "File not found: " + path);
@@ -99,7 +100,7 @@ public class httpfs implements HttpRequestHandler{
         catch (IOException e){
             http_response = server.error_response(ResponseLibrary.status_500, "I/O file error, file was not read: " + path);
         }
-        System.out.println("Reach return?");
+        System.out.println("before retyurnig : " + http_response);
         return http_response;
     }
 //        private ResponseLibrary POST_METHOD(){
@@ -108,7 +109,8 @@ public class httpfs implements HttpRequestHandler{
     private ResponseLibrary getResponse(String status, String message){
         int content_length = message.getBytes().length;
         System.out.println("getResponse");
-        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), "test", message, content_length);
+        return new ResponseLibrary(HTTP_VERSION, status,date.format(ZonedDateTime.now()),content_length,null,message);
+//        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), "test", message, content_length);
     }
 
     @Override

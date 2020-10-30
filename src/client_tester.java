@@ -26,7 +26,7 @@ public class client_tester {
 //        System.out.println("'" + path + "'" + "\n" + f);
 
 
-        pr.println("GET /hello.txt HTTP/1.0\r\nUser-Agent: Hello\r\n\r\n");
+        pr.println("GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
 
 //        pr.println("\n");
 //        pr.println("POST /test3  HTTP/1.0\r\n");

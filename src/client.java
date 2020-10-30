@@ -23,13 +23,13 @@ public class client{
             parsedOptions = cmdParser.parse(options,args);
             System.out.println("parsedoptions: " + parsedOptions);
             //checking for irregularoptions
-            var leftover = parsedOptions.getArgList();
-            System.out.println("parsed options: " + leftover);
-            if(!leftover.isEmpty()){
-                System.out.println("\nInvalid options: leftover:  " + leftover);
-                System.out.println(guide);
-                return;
-            }
+//            var leftover = parsedOptions.getArgList();
+//            System.out.println("parsed options: " + leftover);
+//            if(!leftover.isEmpty()){
+//                System.out.println("\nInvalid options: leftover:  " + leftover);
+//                System.out.println(guide);
+//                return;
+//            }
         }
         catch (ParseException e){
             System.out.println("\nInvalid options parsed exception");
