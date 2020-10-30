@@ -24,10 +24,7 @@ class RequestException extends Exception{
 //    }
 //}
 
-interface HttpRequestHandler {
-    ResponseLibrary handleRequest(RequestLibrary httpRequest);
 
-}
 
 //server used for base for httpfs
 public class server{
@@ -36,6 +33,12 @@ public class server{
     private boolean debug;
     private int port;
     public static final String HTTP_VERSION = "HTTP/1.0";
+
+    public server(int portNumber, HttpRequestHandler requestHandler, boolean debug) {
+        this.port = portNumber;
+        this.requestHandler = requestHandler;
+        this.debug = debug;
+    }
 
     //todo
     public void run() throws IOException {

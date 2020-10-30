@@ -1,24 +1,23 @@
 
-import javax.swing.*;
 import java.io.*;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-public class httpfs{
+public class httpfs implements HttpRequestHandler{
     public static final String GET= "GET";
     public static final String POST = "POST";
     public static final String HTTP_VERSION = "HTTP/1.0";
 
     DateTimeFormatter date =DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss");
     //    "EEE, dd MMM yyyy HH:mm:ss O"
-    private String root_directory;
+    private String rootDir;
     //default
     public httpfs(){
-        this.root_directory = System.getProperty("user.dir");
+        this.rootDir = System.getProperty("user.dir");
     }
-    public httpfs(String root_directory){
-        this.root_directory = root_directory;
+    public httpfs(String rootDir){
+        this.rootDir = rootDir;
     }
 
     public ResponseLibrary handle_request(RequestLibrary http_request){
@@ -37,7 +36,7 @@ public class httpfs{
 
     private ResponseLibrary GET_METHOD(RequestLibrary http_request){
         ResponseLibrary http_response = null;
-        String path = root_directory + http_request.getRequest();
+        String path = rootDir + http_request.getRequest();
         File file = new File(path);
 
         if(file.isDirectory()){
@@ -82,6 +81,20 @@ public class httpfs{
         int content_length = message.getBytes().length;
 
         return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), null, message, content_length);
+    }
+
+    @Override
+    public ResponseLibrary handleRequest(RequestLibrary httpRequest) {
+
+        ResponseLibrary httpResponse = null;
+        if (httpRequest.getMethod().equalsIgnoreCase(httpRequest.GET)) {
+            httpResponse = GET_METHOD(httpRequest);
+        }
+        else if (httpRequest.getMethod().equalsIgnoreCase(httpRequest.POST)) {
+//            httpResponse = POST_METHOD(httpRequest);
+        }
+
+        return httpResponse;
     }
 }
 
