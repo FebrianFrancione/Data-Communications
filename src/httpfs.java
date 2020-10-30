@@ -26,7 +26,9 @@ public class httpfs implements HttpRequestHandler{
         ResponseLibrary http_response = null;
         if (http_request.getMethod().equalsIgnoreCase(GET)){
 //            request_response = GET_METHOD();
-            GET_METHOD(http_request);
+           http_response =  GET_METHOD(http_request);
+            System.out.println(" after get method" + http_response);
+            System.out.println("back to handlerequest");
         }else if(http_request.getMethod().equalsIgnoreCase(POST)){
 //            request_response = POST_METHOD();
             //todo
@@ -38,24 +40,17 @@ public class httpfs implements HttpRequestHandler{
 
     private ResponseLibrary GET_METHOD(RequestLibrary http_request){
         ResponseLibrary http_response = null;
-
-
 //        String path = rootDir + http_request.getRequest();
 //        File file = new File(path);
-
-
         //trying to set defAULT rootdir
         String path = rootDir + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
-
         System.out.println("HTTPFS: Rootdir: " + rootDir);
 //        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
         //hardcoded
         //set default direcoty to this?
 //        path = rootDir+"\\src\\testFile";
-
 //        path = rootDir+"\\src\\testFile\\hello.txt";
         System.out.println("test path: " + path);
-
         Path file_path = new File(path).toPath();
         try {
             String mimetype = Files.probeContentType(file_path);
@@ -64,7 +59,6 @@ public class httpfs implements HttpRequestHandler{
             e.printStackTrace();
         }
         File file = new File(path);
-
         //this causes error with file
 //        String[] pathnames;
 //        // Populates the array with names of files and directories
@@ -76,9 +70,6 @@ public class httpfs implements HttpRequestHandler{
 //            System.out.println(pathname);
 //        }
         //////
-
-
-
         if(file.isDirectory()){
             System.out.println("httpfs 400");
             return server.error_response(ResponseLibrary.status_400, "Not a file!");
@@ -91,20 +82,16 @@ public class httpfs implements HttpRequestHandler{
             return server.error_response(ResponseLibrary.status_400, "Non-Existent");
         }
         // http server response
-
         //in case passes correctly
         try (BufferedReader br = new BufferedReader(new FileReader(path))){
-
             StringBuilder sb = new StringBuilder();
             String line;
-
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 sb.append(line + '\n');
                 System.out.println("httpfs sb: " + sb);
             }
-
             http_response = getResponse(ResponseLibrary.status_200, sb.toString());
-
+            System.out.println("httpresponse after get respoinse : " + http_response);
         } catch (FileNotFoundException f){
             //http response
             http_response = server.error_response(ResponseLibrary.status_500, "File not found: " + path);
@@ -112,14 +99,12 @@ public class httpfs implements HttpRequestHandler{
         catch (IOException e){
             http_response = server.error_response(ResponseLibrary.status_500, "I/O file error, file was not read: " + path);
         }
-
+        System.out.println("Reach return?");
         return http_response;
-
     }
 //        private ResponseLibrary POST_METHOD(){
 //
 //        }
-
     private ResponseLibrary getResponse(String status, String message){
         int content_length = message.getBytes().length;
         System.out.println("getResponse");
@@ -128,7 +113,6 @@ public class httpfs implements HttpRequestHandler{
 
     @Override
     public ResponseLibrary handleRequest(RequestLibrary httpRequest) {
-
         ResponseLibrary httpResponse = null;
         if (httpRequest.getMethod().equalsIgnoreCase(httpRequest.GET)) {
             httpResponse = GET_METHOD(httpRequest);
@@ -136,7 +120,6 @@ public class httpfs implements HttpRequestHandler{
         else if (httpRequest.getMethod().equalsIgnoreCase(httpRequest.POST)) {
 //            httpResponse = POST_METHOD(httpRequest);
         }
-
         return httpResponse;
     }
 }
