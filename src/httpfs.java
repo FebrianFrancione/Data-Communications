@@ -1,5 +1,7 @@
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -36,31 +38,72 @@ public class httpfs implements HttpRequestHandler{
 
     private ResponseLibrary GET_METHOD(RequestLibrary http_request){
         ResponseLibrary http_response = null;
-        String path = rootDir + http_request.getRequest();
+
+
+//        String path = rootDir + http_request.getRequest();
+//        File file = new File(path);
+
+
+        //trying to set defAULT rootdir
+        String path = rootDir + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
+
+        System.out.println("HTTPFS: Rootdir: " + rootDir);
+//        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
+        //hardcoded
+        //set default direcoty to this?
+//        path = rootDir+"\\src\\testFile";
+
+//        path = rootDir+"\\src\\testFile\\hello.txt";
+        System.out.println("test path: " + path);
+
+        Path file_path = new File(path).toPath();
+        try {
+            String mimetype = Files.probeContentType(file_path);
+            System.out.println("File type: " + mimetype);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
         File file = new File(path);
 
+        //this causes error with file
+//        String[] pathnames;
+//        // Populates the array with names of files and directories
+//        pathnames = file.list();
+////////
+//        // For each pathname in the pathnames array
+//        for (String pathname : pathnames) {
+//            // Print the names of files and directories
+//            System.out.println(pathname);
+//        }
+        //////
+
+
+
         if(file.isDirectory()){
+            System.out.println("httpfs 400");
             return server.error_response(ResponseLibrary.status_400, "Not a file!");
             //http server response
         } else if(!file.canRead()){
+            System.out.println("httpfs 500");
             return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path);
         }else if(!file.isFile()) {
+            System.out.println("httpfs 400: non existent");
             return server.error_response(ResponseLibrary.status_400, "Non-Existent");
         }
         // http server response
 
         //in case passes correctly
-        try{
-
-            String line;
-            BufferedReader br = new BufferedReader(new FileReader(path));
+        try (BufferedReader br = new BufferedReader(new FileReader(path))){
 
             StringBuilder sb = new StringBuilder();
+            String line;
+
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 sb.append(line + '\n');
+                System.out.println("httpfs sb: " + sb);
             }
 
-            http_response = valid_response(ResponseLibrary.status_200, sb.toString());
+            http_response = getResponse(ResponseLibrary.status_200, sb.toString());
 
         } catch (FileNotFoundException f){
             //http response
@@ -77,10 +120,10 @@ public class httpfs implements HttpRequestHandler{
 //
 //        }
 
-    private ResponseLibrary valid_response(String status, String message){
+    private ResponseLibrary getResponse(String status, String message){
         int content_length = message.getBytes().length;
-
-        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), null, message, content_length);
+        System.out.println("getResponse");
+        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), "test", message, content_length);
     }
 
     @Override

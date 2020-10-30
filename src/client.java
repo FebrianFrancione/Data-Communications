@@ -2,49 +2,46 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.commons.cli.*;
 
+
 public class client{
 
-    private static int PORT = 80;
-    static final String guide = "usage: httpfs [-v] [-p Port] [-d PATH-TO-DIR]\\n\" +\n" +
-            "                    \"\\n\" +\n" +
-            "                    \"-v   Prints debugging messages\\n\" +\n" +
-            "                    \"-p   Specifies the port number that the server will listen and serve at.\\n\" +\n" +
-            "                    \"     Default is 8080.\\n\" +\n" +
-            "                    \"-d   Specifies the directory that the server will use to read/write requested files.\\n\" +\n" +
-            "                    \"     Default is the current directory when launching the application.\\n";
+    private static final int DEFAULT_PORT = 80;
+    private static final int MAX_PORT = 65535;
+    private static final String PORT_ERROR = "Port out of range. Please select a port in range [0, 65535]";
+    private static final String DIR_ERROR = "The path does not correspond to a directory.";
 
-    static private Options getParserOptions(){
-        Option debug = Option.builder("v").hasArg(false).required(false).build();
-        Option directory = Option.builder("d").hasArg().required(false).build();
-        Option path= Option.builder("p").hasArg(false).required().build();
-        return new Options().addOption(path).addOption(debug).addOption(directory);
-    }
 
     public static void main(String[]args){
         Options options = getParserOptions();
+        System.out.println(options);
         DefaultParser cmdParser = new DefaultParser();
+        System.out.println("cmdpar: " + cmdParser);
         CommandLine parsedOptions = null;
+
         try{
+            System.out.println("1");
             parsedOptions = cmdParser.parse(options,args);
+            System.out.println("parsedoptions: " + parsedOptions);
             //checking for irregularoptions
             var leftover = parsedOptions.getArgList();
+            System.out.println("parsed options: " + leftover);
             if(!leftover.isEmpty()){
-                System.out.println("\nInvalid options " + leftover);
-
+                System.out.println("\nInvalid options: leftover:  " + leftover);
                 System.out.println(guide);
                 return;
             }
-        }catch (ParseException e){
-            System.out.println("\nInvalid options");
-
+        }
+        catch (ParseException e){
+            System.out.println("\nInvalid options parsed exception");
             System.out.println(guide);
             return;
         }
 
 //validating port
+        int port = DEFAULT_PORT;
         if(parsedOptions.hasOption('p')){
             try{
-                PORT = Integer.parseInt(parsedOptions.getOptionValue('p'));
+                port = Integer.parseInt(parsedOptions.getOptionValue('p'));
             }catch(NumberFormatException e){
                 System.out.println("Invalid port!");
 
@@ -53,14 +50,14 @@ public class client{
         }
 
         if(parsedOptions.hasOption('v')){
-            System.out.println("Port: " + PORT);
+            System.out.println("Port: " + port);
         }
 
-        if(PORT > 65535 || PORT < 0){
+        if(port > 65535 || port < 0){
             System.out.println("Port out of range. Please select a port in range [0, 65535]");
             return;
         }
-        else if(PORT != 80 && PORT < 1024){
+        else if(port != 80 && port < 1024){
             System.out.println("Port error. port is a well-known port");
         }
 
@@ -89,13 +86,33 @@ public class client{
         }
 
         boolean verbose = parsedOptions.hasOption('v');
-        server fileServer = new server(PORT, new httpfs(dir.getPath()), verbose);
+        server fileServer = new server(port, new httpfs(dir.getPath()), verbose);
         try{
             fileServer.run();
         }catch(IOException e){
             System.out.println("Issue creating server socket" + e.getMessage());
         }
     }
+
+    static private Options getParserOptions(){
+
+        Option debug = Option.builder("v").hasArg(false).required(false).build();
+
+        Option directory = Option.builder("d").hasArg().required(false).build();
+
+        Option path= Option.builder("p").hasArg().required(false).build();
+
+        return new Options().addOption(debug).addOption(directory).addOption(path);
+    }
+
+
+    static final String guide = "usage: httpfs [-v] [-p Port] [-d PATH-TO-DIR]\\n\" +\n" +
+            "                    \"\\n\" +\n" +
+            "                    \"-v   Prints debugging messages\\n\" +\n" +
+            "                    \"-p   Specifies the port number that the server will listen and serve at.\\n\" +\n" +
+            "                    \"     Default is 8080.\\n\" +\n" +
+            "                    \"-d   Specifies the directory that the server will use to read/write requested files.\\n\" +\n" +
+            "                    \"     Default is the current directory when launching the application.\\n";
 }
 
 //import java.util.Scanner;
