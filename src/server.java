@@ -47,23 +47,36 @@ public class server{
         if (debug) System.out.println("Server is running ");
 
         while(true){
-            try (Socket socket = serverSocket.accept();
-                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
+            System.out.println("File HttpServer: While still true");
+//            try (Socket socket = serverSocket.accept();
+//                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+//                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
+            try{
+                Socket socket = serverSocket.accept();
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+//            try{
+//                Socket socket = serverSocket.accept();
+//                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+//                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
                 RequestLibrary http_request = null;
                 ResponseLibrary http_response = null;
-
+                System.out.println("Serversocket accepted!");
+                System.out.println("httprequest: " + http_request);
+                System.out.println("httpresponse: " + http_response);
                 if (debug == true){
                     System.out.println("Server contacted by " + socket.getInetAddress());
                 }
 
                 try{
 //                    new RequestLibrary(method, requestURI, httpVersion, entityBody, content_length);
+                    System.out.println("Extracting request for http request");
                     http_request = extractRequest(in);
 //if(debug) System.out.println("Request: " + http_request);
                     //todo
                     //do extract and enter the 6 vaariables
+                    System.out.println("httprequest is now: " + http_request);
                     http_response = requestHandler.handleRequest(http_request);
 //                    http_response = http_request.getMethod(),http_request.getRequest(),http_request.getHttp_version(),http_request.getBody(),http_request.getContent_length()
                 }catch (HeaderException e){
@@ -75,6 +88,8 @@ public class server{
                 out.print(http_response.toString());
                 out.flush();
 
+            } catch (IOException ioe) {
+ //cant send 400 0r 500 error
             }
         }
 
@@ -83,7 +98,9 @@ public class server{
     //    private RequestLibrary extractRequest(BufferedReader in) throws HttpRequestFormatException, HeaderIOException{
     private RequestLibrary extractRequest(BufferedReader in) throws HeaderException, RequestException{
         ArrayList<String> headerLines;
+        System.out.println("File HttpServer: Entered here for extract request");
         try{
+            System.out.println("getting Header: ");
             boolean justReadCRLF = false;
             boolean cr = false;
             int fromServer;
@@ -131,17 +148,25 @@ public class server{
         String method = requestLineArgs[0];
         String requestURI = requestLineArgs[1];
         String httpVersion = requestLineArgs[2];
+        System.out.println("--------------");
+        System.out.println("Method: " + method);
+        System.out.println("URI: " + requestURI);
+        System.out.println("HTTP: " + httpVersion);
+        System.out.println("--------------");
 
         //todo
         //replace with sout
         if(!httpVersion.equalsIgnoreCase(HTTP_VERSION)){
+            System.out.println("extractRequest: HTTP VERSION ERROR");
             throw new RequestException("Unsupported version: " + httpVersion);
         }
         if(!requestURI.matches("^/.*")){
+            System.out.println("extractRequest: URI PATH ERROR");
             throw new RequestException("Wrong format for URI path: " + requestURI);
         }
 
         if(!method.equalsIgnoreCase(RequestLibrary.GET) && !method.equalsIgnoreCase(RequestLibrary.POST)){
+            System.out.println("extractRequest: METHOD ERROR");
             throw new RequestException("wrong mehtod: " + method);
         }
 
@@ -156,6 +181,7 @@ public class server{
             if (line.trim().toLowerCase().matches("^content-length: [0-9]+$")) {
                 content_length = Integer.parseInt(line.split("\\s")[1]);
                 contentLengthisSet = true;
+                System.out.println("Header content length: " + content_length);
             }
             //Note: irrelevant header lines are ignored.
         }
@@ -166,6 +192,7 @@ public class server{
 
         String entityBody = null;
         if (content_length > 0) {
+            System.out.println("Content legnth greater than 0: go for body");
             try {
 //                entityBody = getBody(in, content_length);
                 int currentChar;
@@ -185,6 +212,7 @@ public class server{
                 throw new HeaderException("Problem reading the entity body.\n");
             }
         }
+        System.out.println("Final build for extract request");
         return new RequestLibrary(method, requestURI, httpVersion, entityBody, content_length);
     }
 
