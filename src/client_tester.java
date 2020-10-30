@@ -10,5 +10,6 @@ public class client_tester {
         pr.println("GET /status/418 HTTP/1.0\r\n");
 //        pr.println("\n");
         pr.flush();
+        // more debugging required
     }
 }
