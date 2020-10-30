@@ -78,6 +78,7 @@ public class server{
                     //do extract and enter the 6 vaariables
                     System.out.println("httprequest is now: " + http_request);
                     http_response = requestHandler.handleRequest(http_request);
+                    System.out.println("server: " + http_request + "end server");
 //                    http_response = http_request.getMethod(),http_request.getRequest(),http_request.getHttp_version(),http_request.getBody(),http_request.getContent_length()
                 }catch (HeaderException e){
                     http_response = error_response(ResponseLibrary.status_500, e.getMessage());
