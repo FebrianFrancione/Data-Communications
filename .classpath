@@ -3,5 +3,10 @@
 	<classpathentry kind="src" path="Comm445/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/marjanaupama/Desktop/comp-445/commons-cli-1.4/commons-cli-1.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="/Users/marjanaupama/Desktop/comp-445/commons-cli-1.4/commons-cli-1.4-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/marjanaupama/Desktop/comp-445/commons-cli-1.4/commons-cli-1.4-test-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/marjanaupama/Desktop/comp-445/commons-cli-1.4/commons-cli-1.4-tests.jar"/>
+	<classpathentry kind="lib" path="/Users/marjanaupama/Desktop/comp-445/commons-cli-1.4/commons-cli-1.4.jar"/>
 	<classpathentry kind="output" path="Comm445/bin"/>
 </classpath>

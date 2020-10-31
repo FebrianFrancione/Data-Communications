@@ -16,6 +16,7 @@ public class httpfs implements HttpRequestHandler{
     private String rootDir;
     //default
     public httpfs(){
+    	//for running with xampp /opt/lampp/htdocs/src/ which comes with some issues need to fix
         this.rootDir = System.getProperty("user.dir");
     }
     public httpfs(String rootDir){
