@@ -5,7 +5,7 @@ import org.apache.commons.cli.*;
 
 public class client{
 
-    private static final int DEFAULT_PORT = 80;
+    private static final int DEFAULT_PORT = 8080;
     private static final int MAX_PORT = 65535;
     private static final String PORT_ERROR = "Port out of range. Please select a port in range [0, 65535]";
     private static final String DIR_ERROR = "The path does not correspond to a directory.";

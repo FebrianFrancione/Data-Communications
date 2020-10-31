@@ -28,6 +28,10 @@ public class httpfs implements HttpRequestHandler{
         ResponseLibrary http_response = null;
         if (http_request.getMethod().equalsIgnoreCase(GET)){
 //            request_response = GET_METHOD();
+        	if(http_request.toString().contains("GET /../../")) {
+        		System.out.println("Not permissible to access");
+        		return server.error_response(ResponseLibrary.status_403, "Forbidden access ",  http_request.getUser_agent());
+        	}
            http_response =  GET_METHOD(http_request);
             System.out.println(" after get method" + http_response);
             System.out.println("back to handlerequest");
@@ -46,7 +50,8 @@ public class httpfs implements HttpRequestHandler{
 //        String path = rootDir + http_request.getRequest();
 //        File file = new File(path);
         //trying to set defAULT rootdir
-        String path = rootDir + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
+        String path = rootDir + "/src/testFile/" ;
+       // System.out.println("path" +path);
 //        System.out.println("HTTPFS: Rootdir: " + rootDir);
 //        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
         //hardcoded
@@ -81,7 +86,7 @@ public class httpfs implements HttpRequestHandler{
             return server.error_response(ResponseLibrary.status_400, "Not a file!",  http_request.getUser_agent());
             //http server response
         }else if(!file.isFile()) {
-            System.out.println("httpfs 404: not found");
+            System.out.println("httpfs 404: not found"+"path");
             return server.error_response(ResponseLibrary.status_404, "Not Found", http_request.getUser_agent());
         } else if(!file.canRead()){
             System.out.println("httpfs 500");
