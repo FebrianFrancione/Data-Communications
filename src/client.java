@@ -5,90 +5,80 @@ import org.apache.commons.cli.*;
 
 public class client{
 
-    private static final int DEFAULT_PORT = 8080;
-    private static final int MAX_PORT = 65535;
-    private static final String PORT_ERROR = "Port out of range. Please select a port in range [0, 65535]";
-    private static final String DIR_ERROR = "The path does not correspond to a directory.";
-
-
+    private static final int DEFAULT_PORT = 80;
     public static void main(String[]args){
-        Options options = getParserOptions();
-        System.out.println(options);
-        DefaultParser cmdParser = new DefaultParser();
-        System.out.println("cmdpar: " + cmdParser);
+        Options command_option = getParserOptions();
+        System.out.println(command_option);
+        DefaultParser command_parser = new DefaultParser();
+        System.out.println("command parser: " + command_parser);
         CommandLine parsedOptions = null;
 
         try{
             System.out.println("1");
-            parsedOptions = cmdParser.parse(options,args);
+            parsedOptions = command_parser.parse(command_option,args);
             System.out.println("parsedoptions: " + parsedOptions);
-            //checking for irregularoptions
-//            var leftover = parsedOptions.getArgList();
-//            System.out.println("parsed options: " + leftover);
-//            if(!leftover.isEmpty()){
-//                System.out.println("\nInvalid options: leftover:  " + leftover);
-//                System.out.println(guide);
-//                return;
-//            }
         }
         catch (ParseException e){
-            System.out.println("\nInvalid options parsed exception");
+            System.out.println("Invalid options parsed exception");
             System.out.println(guide);
             return;
         }
-
-//validating port
+        //post validation
         int port = DEFAULT_PORT;
+//checking for option v
+        if(parsedOptions.hasOption('v')){
+            System.out.println("Port number: " + port);
+        }
+//checking for option p
         if(parsedOptions.hasOption('p')){
             try{
                 port = Integer.parseInt(parsedOptions.getOptionValue('p'));
             }catch(NumberFormatException e){
-                System.out.println("Invalid port!");
-
+                System.out.println("Invalid port!: " + port);
                 System.out.println(guide);
             }
         }
 
-        if(parsedOptions.hasOption('v')){
-            System.out.println("Port: " + port);
-        }
 
         if(port > 65535 || port < 0){
             System.out.println("Port out of range. Please select a port in range [0, 65535]");
             return;
         }
         else if(port != 80 && port < 1024){
-            System.out.println("Port error. port is a well-known port");
+            System.out.println("Port error. You amy not select this port as it belongs to the well-know ports list");
         }
 
-        //validate path
-        String rootDir =System.getProperty("user.dir");
-        File dir =new File(rootDir);
+        //creating new path validation
+        String root = System.getProperty("user.dir");
+        File directory = new File(root);
+
+        if(parsedOptions.hasOption('v')){
+            System.out.println("Root dir: " + root);
+        }
+
         if (parsedOptions.hasOption('d')){
-            rootDir =parsedOptions.getOptionValue('d');
-            dir= new File(rootDir);
-            if(!dir.isDirectory()){
-                System.out.println("The path does not correspond to a directory.");
+            root =parsedOptions.getOptionValue('d');
+            directory= new File(root);
+            if(!directory.isDirectory()){
+                System.out.println("Sorry this path is not a directory.");
                 return;
             }
         }
 
-        if(!dir.canWrite()){
-            System.out.println("Cannot write to dir: " + rootDir);
+        if(!directory.canWrite()){
+            System.out.println("Directory cannot be written to: " + root);
             return;
-        }else if(!dir.canRead()){
-            System.out.println("Cannot read dir: " + rootDir);
+        }else if(!directory.canRead()){
+            System.out.println("Directory cannot be read: " + root);
             return;
         }
 
-        if(parsedOptions.hasOption('v')){
-            System.out.println("Root dir: " + rootDir);
-        }
+
 
         boolean verbose = parsedOptions.hasOption('v');
-        server fileServer = new server(port, new httpfs(dir.getPath()), verbose);
+        server fileServer = new server(port, new httpfs(directory.getPath()), verbose);
         try{
-            fileServer.run();
+            fileServer.run_server();
         }catch(IOException e){
             System.out.println("Issue creating server socket" + e.getMessage());
         }
@@ -114,36 +104,3 @@ public class client{
             "                    \"-d   Specifies the directory that the server will use to read/write requested files.\\n\" +\n" +
             "                    \"     Default is the current directory when launching the application.\\n";
 }
-
-//import java.util.Scanner;
-//
-//public class Httpc {
-//    public static void main(String[] args) throws Exception {
-//        // TODO Auto-generated method stub
-//        RequestLibrary lib = new RequestLibrary();
-//        String entry = " ";
-//        String cmd;
-//        int stop = 0;
-//        Scanner scan = new Scanner(System.in);
-//        System.out.println("What command do you want to use: ");
-//        entry = scan.nextLine();
-//        while(!entry.contains("Close")) {
-//            if(entry.contains("get -v")) {
-//                cmd = entry.substring(6);
-//                lib.getWVerbose(cmd);
-//                entry = scan.nextLine();
-//            }
-//            else if(entry.contains("get")) {
-//                cmd = entry.substring(3);
-//                lib.get(cmd);
-//                entry = scan.nextLine();
-//            }
-//            else if(entry.contains("post")){
-//                lib.post(entry);
-//                entry = scan.nextLine();
-//            }
-//            System.out.println("Connection Stopped");
-//            entry = "Close";
-//        }
-//    }
-//}

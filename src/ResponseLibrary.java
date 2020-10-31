@@ -1,3 +1,5 @@
+import java.io.File;
+
 public class ResponseLibrary {
     // can be merged wit request library? under "Responses"
     public static final String status_200 = "200: OK";
@@ -16,6 +18,8 @@ public class ResponseLibrary {
     public String user_agent;
     public String content_type;
     public String body;
+    public String file;
+
     public int content_length;
 
     public String getDate() {
@@ -74,8 +78,9 @@ public class ResponseLibrary {
         this.user_agent = user_agent;
     }
 
-    //default
 
+
+    //default
     public ResponseLibrary(String http_version,String status,String date,String user_agent, int content_length, String content_type, String body) {
         this.http_version = http_version;
         this.status = status;
@@ -85,6 +90,7 @@ public class ResponseLibrary {
         this.content_length = content_length;
         this.user_agent = user_agent;
     }
+
 
     @Override
     public String toString() {

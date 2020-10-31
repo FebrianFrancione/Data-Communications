@@ -11,7 +11,7 @@ public class client_tester {
 
 //this creates new file - source is required to go deeper
 //        new File("C:\\Users\\febri\\IdeaProjects\\comp445-a2-http-server\\src\\test2.txt").createNewFile();
-////        new File("C:\\Users\\Simon\\doesntexist\\test.txt").createNewFile();
+
 
 
 //
@@ -24,14 +24,16 @@ public class client_tester {
 //        System.out.println("'" + path + "'" + "\n" + f);
 
         System.out.println("client request: " + "GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
-        pr.println("GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
+//        pr.println("GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
 
 //        pr.println("\n");
 //        pr.println("POST /test3  HTTP/1.0\r\n");
+        //testing file directory
+        pr.println("POST /test1234 HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
         pr.flush();
 
-        InputStreamReader in = new InputStreamReader(client.getInputStream());
-        BufferedReader bf = new BufferedReader(in);
+        InputStreamReader input = new InputStreamReader(client.getInputStream());
+        BufferedReader bf = new BufferedReader(input);
         System.out.println("Server response: ");
         String str = bf.readLine();
         while(str != null) {
