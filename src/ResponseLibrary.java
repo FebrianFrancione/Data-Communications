@@ -9,7 +9,12 @@ public class ResponseLibrary {
 
 
     //response method components
-    public String date, status, http_version, content_type, body;
+    public String date;
+    public String status;
+    public String http_version;
+    public String user_agent;
+    public String content_type;
+    public String body;
     public int content_length;
 
     public String getDate() {
@@ -60,21 +65,31 @@ public class ResponseLibrary {
         this.content_length = content_length;
     }
 
+    public String getUser_agent() {
+        return user_agent;
+    }
+
+    public void setUser_agent(String user_agent) {
+        this.user_agent = user_agent;
+    }
+
     //default
 
-    public ResponseLibrary(String http_version,String status,String date, int content_length, String content_type, String body) {
+    public ResponseLibrary(String http_version,String status,String date,String user_agent, int content_length, String content_type, String body) {
         this.http_version = http_version;
         this.status = status;
         this.date = date;
         this.content_type = content_type;
         this.body = body;
         this.content_length = content_length;
+        this.user_agent = user_agent;
     }
 
     @Override
     public String toString() {
         return http_version + " " + status + "\r\n" +
                 ((date != null) ? "Date: " + date + "\r\n" : "") +
+                "User-Agent: " + user_agent + "\r\n" +
                 "Content-Length: " + content_length + "\r\n" +
                 ((content_type != null)? "Content-Type: " + content_type + "\r\n" : "") +
                 "\r\n" + // end of header
