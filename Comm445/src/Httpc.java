@@ -1,4 +1,4 @@
-import java.util.Scanner;
+/*import java.util.Scanner;
 import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class Httpc {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-			RequestLibrary lib = new RequestLibrary();
+			RequestLib lib = new RequestLib();
 			Pattern pattern;
 		    Matcher matcher;
 			String entry = " ";
@@ -39,3 +39,4 @@ public class Httpc {
 			}
 	}
 }
+*/

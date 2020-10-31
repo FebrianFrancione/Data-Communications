@@ -1,4 +1,4 @@
-import java.net.Socket;
+/*import java.net.Socket;
 import java.util.Scanner;
 import java.io.*;
 import java.net.URL;
@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RequestLibrary {
+public class RequestLib {
 	private final int PORT  = 80;
 	private final String VERSION = "HTTP/1.0";
 	private final String USER_AGENT = "USER-AGENT: MyAwesomeBrowser";
@@ -180,4 +180,4 @@ public class RequestLibrary {
 	      "-f fileAssociates the content of a file to the body HTTP POST request."+
           "Either [-d] or [-f] can be used but not both.");
 	}
-}
+}*/
