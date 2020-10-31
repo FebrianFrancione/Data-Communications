@@ -139,9 +139,7 @@ public class httpfs implements req_handler {
                 } else {
                     pw.print("");
                 }
-//            try (PrintWriter pw = new PrintWriter(file_directory)) {
-//                String content = http_request.getBody();
-//                pw.print(content!= null ? content : "");
+
 //
             }
             catch (FileNotFoundException e) {
