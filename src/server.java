@@ -1,11 +1,10 @@
-import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.net.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
+
 
 class HeaderException extends Exception{
     public HeaderException(String message){
@@ -17,88 +16,66 @@ class RequestException extends Exception{
         super(message);
     }
 }
-//
-//class HttpRequestFormatException extends Exception {
-//    public HttpRequestFormatException(String message) {
-//        super(message);
-//    }
-//}
+
 //server used for base for httpfs
 public class server{
 
-    private HttpRequestHandler requestHandler;
+    private req_handler requestHandler;
     private boolean debug;
     private int port;
     public static final String HTTP_VERSION = "HTTP/1.0";
 
-    public server(int portNumber, HttpRequestHandler requestHandler, boolean debug) {
+    public server(int portNumber, req_handler requestHandler, boolean debug) {
         this.port = portNumber;
         this.requestHandler = requestHandler;
         this.debug = debug;
     }
 
     //todo
-    public void run() throws IOException {
+    public void run_server() throws IOException {
         System.out.println("Server starting");
         ServerSocket serverSocket = new ServerSocket(port);
         if (debug) System.out.println("Server is running ");
 
         while(true){
             System.out.println("1");
-//            try (Socket socket = serverSocket.accept();
-//                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-//                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
             try{
                 Socket socket = serverSocket.accept();
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-//            try{
-//                Socket socket = serverSocket.accept();
-//                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-//                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
                 RequestLibrary http_request = null;
                 ResponseLibrary http_response = null;
-//                System.out.println("Serversocket accepted!");
-//                System.out.println("httprequest: " + http_request);
-//                System.out.println("httpresponse: " + http_response);
+
                 if (debug == true){
                     System.out.println("Server contacted by " + socket.getInetAddress());
                 }
 
                 try{
-//                    new RequestLibrary(method, requestURI, httpVersion, entityBody, content_length);
-//                    System.out.println("Extracting request for http request");
+
                     System.out.println(":Server");
                     http_request = extractRequest(in);
-//if(debug) System.out.println("Request: " + http_request);
-                    //todo
-                    //do extract and enter the 6 vaariables
                     System.out.println("5: Run()");
                     System.out.println("httprequest is now: " + http_request);
                     System.out.println("----------");
-                    http_response = requestHandler.handleRequest(http_request);
+                    http_response = requestHandler.request_handler(http_request);
                     System.out.println("6: got http_response sends back to client " + http_response);
 
-//                    System.out.println("server: " + http_request + "end server");
-//                    http_response = http_request.getMethod(),http_request.getRequest(),http_request.getHttp_version(),http_request.getBody(),http_request.getContent_length()
                 }catch (HeaderException e){
                     http_response = error_response(ResponseLibrary.status_500, e.getMessage(), http_request.getUser_agent());
                 }catch(RequestException e){
                     http_response = error_response(ResponseLibrary.status_400, e.getMessage(), http_request.getUser_agent());
                 }
-                // need to seperate erros to get a secodn error for400 bad request
-                System.out.println("httpresponse to string " + http_response.toString() + "end");
+
+                System.out.println("http response to string " + http_response.toString() + "end");
                 String response_body = http_response.toString();
 
-//                    out.print(http_response.toString());
 
                 out.print(response_body);
                 out.flush();
 
 
             } catch (IOException ioe) {
-                //cant send 400 0r 500 error
             }
         }
 
@@ -106,53 +83,54 @@ public class server{
 
     //    private RequestLibrary extractRequest(BufferedReader in) throws HttpRequestFormatException, HeaderIOException{
     private RequestLibrary extractRequest(BufferedReader in) throws HeaderException, RequestException{
-        ArrayList<String> headerLines;
-//        System.out.println("File HttpServer: Entered here for extract request");
+        ArrayList<String> headers;
+
         System.out.println("3: extract Request");
         try{
-//            System.out.println("getting Header: ");
-            boolean justReadCRLF = false;
-            boolean cr = false;
-            int fromServer;
-            char currentChar;
+
+            boolean carriage_line_return = false;
+            boolean carriage_line = false;
+            int server_int;
+            char current_char;
             StringBuilder sb = new StringBuilder();
             ArrayList<String> header =new ArrayList<>();
 
-            while((fromServer = in.read()) != -1){
-                currentChar = (char)fromServer;
+            while((server_int = in.read()) != -1){
+                current_char = (char)server_int;
 
-                if(cr && currentChar == '\n'){
-                    //CRLF
+                if(carriage_line && current_char == '\n'){
                     header.add(sb.toString());
                     sb =new StringBuilder();
-                    if(justReadCRLF){
+                    if(carriage_line_return){
                         break;
                     }
-                    cr = false;
-                    justReadCRLF = true;
-                }else if(currentChar == '\r'){
-                    if(cr){
-                        justReadCRLF = false; // two cr'sbreaks crlf crl;f sequence
-                    }else cr = true;
+                    carriage_line_return = true;
+                    carriage_line = false;
+
+                }else if(current_char == '\r'){
+                    if(carriage_line){
+                        carriage_line_return = false; // two cr'sbreaks crlf crl;f sequence
+                    }else carriage_line = true;
                 }else{
-                    cr=false;
-                    justReadCRLF = false;
-                    sb.append(currentChar);
+                    carriage_line_return = false;
+                    carriage_line=false;
+         //appending char to strinbuilder
+                    sb.append(current_char);
                 }
             }
-            headerLines = header;
-            System.out.println("HeaderLines: " + headerLines);
+            headers = header;
+            System.out.println("headers: " + headers);
 //            headerLines = getHeader(in);
         }catch(IOException e){
             System.out.println("Could not extract HTTP header");
-            throw new HeaderException("Request Header is ill-formed\n");
+            throw new HeaderException("Request Header is not correct");
         }
         // parse header lines
-        if(headerLines.isEmpty()) throw new HeaderException("Request Header is ill-formed\n");
+        if(headers.isEmpty()) throw new HeaderException("Request Header is ill-formed\n");
 
 
-        String[]requestLineArgs = headerLines.get(0).split("\\s+");
-        String[]agenttest1 = headerLines.get(1).split("\\s+");
+        String[]requestLineArgs = headers.get(0).split("\\s+");
+        String[]agenttest1 = headers.get(1).split("\\s+");
 //        System.out.println(agenttest1[0] + " ----- " + agenttest1[1]);
 
 //        System.out.println("testing headerLines: " + headerLines);
@@ -167,18 +145,19 @@ public class server{
 //        System.out.println(user_agent);
 
         if(requestLineArgs.length != 3){
-            throw new RequestException("request ill formed (three header objects required): " + headerLines.get(0) + "\n");
+            throw new RequestException("rHeaders must have 3 components " + headers.get(0));
         }
 
         String method = requestLineArgs[0];
         String requestURI = requestLineArgs[1];
         String httpVersion = requestLineArgs[2];
-        String user_agent = agenttest1[1];
+
+//        String user_agent = agenttest1[1];
         System.out.println("--------------");
         System.out.println("Method: " + method);
         System.out.println("URI: " + requestURI);
         System.out.println("HTTP: " + httpVersion);
-        System.out.println("User Agent: " + user_agent);
+//        System.out.println("User Agent: " + user_agent);
         System.out.println("--------------");
 
         //todo
@@ -206,7 +185,7 @@ public class server{
         //todo
         //look into and makew better
 //        String user_agent = "";
-        for (String line : headerLines) {
+        for (String line : headers) {
 //            System.out.println("LINE:" + line);
 //            System.out.println("line trimmed:" + line.trim().toLowerCase());
             line = line.trim().toLowerCase();
@@ -224,47 +203,49 @@ public class server{
 
             }
         }
-        System.out.println("testing headerLines: " + headerLines);
-        System.out.println("0: "+headerLines.get(0));
-        System.out.println("1: "+headerLines.get(1));
-
-//        if(userAgentIsSet){
-//            String[]agenttest = headerLines.get(1).split("\\s+");
-//            System.out.println("Split agent line: " + agenttest[0] + " :split: " + agenttest[1]);
-//            user_agent = agenttest[1];
-//            System.out.println("Updated user-agent in true: " + user_agent);
-//        }
-        if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
-            throw new RequestException("No content length for POST");
+        String user_agent = "";
+        if(userAgentIsSet) {
+            user_agent = agenttest1[1];
+            System.out.println("User Agent: " + user_agent);
         }
+        System.out.println("testing headerLines: " + headers);
+        System.out.println("0: "+headers.get(0));
+        System.out.println("1: "+headers.get(1));
+
+//        if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
+//        if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
+//            throw new RequestException("No content length for POST");
+//        }
 
 
-        String entityBody = null;
+        String body = null;
         if (content_length > 0) {
             System.out.println("Content length greater than 0: go for body");
             try {
-//                entityBody = getBody(in, content_length);
-                int currentChar;
-                int byteCount = 0;
+                int bytes = 0;
+                int current_char;
+
                 StringBuilder sb = new StringBuilder();
 
-                while (byteCount < content_length && (currentChar = in.read()) != -1) {
-
-                    // read() gives an int from 0 to 65535
-                    // We need to know whether the character is a 1-byte, or 2-byte character
-                    byteCount += (currentChar > 127)? 2 : 1;
-                    sb.append((char)currentChar);
+                while (bytes < content_length && (current_char = in.read()) != -1) {
+                    if(current_char > 127){
+                        bytes += 2;
+                    }else{
+                        bytes += 1;
+                    }
+                    sb.append((char)current_char);
                 }
 
-                entityBody =  sb.toString();
+                body =  sb.toString();
             } catch (IOException e) {
-                throw new HeaderException("Problem reading the entity body.\n");
+                throw new HeaderException("Body could not be read");
             }
         }
         System.out.println("4");
-        String content_type = "texttest";
+        String content_type = "";
+        System.out.println("user agent: " + user_agent);
         System.out.println("----------------------");
-        return new RequestLibrary(method, requestURI, httpVersion, entityBody, user_agent, content_length, content_type);
+        return new RequestLibrary(method, requestURI, httpVersion, body, user_agent, content_length, content_type);
     }
     
     private void getContentType(String file, PrintWriter writer) throws Exception {
@@ -294,63 +275,6 @@ public class server{
         writer.close();
 	}
 
-//    private String getBody(BufferedReader in, int size) throws  IOException{
-//
-//        int currentChar;
-//        int byteCount = 0;
-//        StringBuilder sb = new StringBuilder();
-//
-//        while (byteCount < size && (currentChar = in.read()) != -1) {
-//
-//            // read() gives an int from 0 to 65535
-//            // We need to know whether the character is a 1-byte, or 2-byte character
-//            byteCount += (currentChar > 127)? 2 : 1;
-//            sb.append((char)currentChar);
-//        }
-//
-//        return sb.toString();
-//    }
-
-//    private ArrayList<String> getHeader(BufferedReader in) throws IOException {
-//
-//        ArrayList<String> header = new ArrayList<>();
-//        boolean cr = false;
-//        boolean justReadCRLF = false;
-//        int fromServer;
-//        char currentChar;
-//        StringBuilder sb = new StringBuilder();
-//
-//        //add the header lines, separated by CRLF
-//        while ((fromServer = in.read()) != -1) {
-//
-//            currentChar = (char)fromServer;
-//
-//            if (cr && currentChar == '\n') { // crlf
-//                header.add(sb.toString());
-//                sb = new StringBuilder();
-//
-//                if (justReadCRLF) { //two crlf in a row = end of header lines
-//                    break;
-//                }
-//                cr = false;
-//                justReadCRLF = true;
-//            }
-//            else if (currentChar == '\r') {
-//                if (cr) {
-//                    justReadCRLF = false; // two cr's in a row breaks a possible crlfcrlf sequence
-//                }
-//                else cr = true;
-//            }
-//            else {
-//                cr = false;
-//                justReadCRLF = false;
-//                sb.append(currentChar);
-//            }
-//        }
-//
-//        return header;
-//    }
-
     public static ResponseLibrary error_response(String status, String message, String user_agent){
         int content_length = 0;
 //        int content_length = message.getBytes().length;
@@ -360,33 +284,3 @@ public class server{
         return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()),user_agent, content_length, null,"null" );
     }
 }
-
-//import java.io.BufferedReader;
-//import java.io.InputStreamReader;
-//import java.io.OutputStream;
-//import java.io.PrintWriter;
-//import java.net.ServerSocket;
-//import java.net.Socket;
-//import java.net.InetAddress;
-//
-//public class server {
-//
-//    //First test for Client Request and Server Response with sockets
-//    public static void main(String[] args)throws Exception {
-//
-//        System.out.println("Server is started");
-////        ServerSocket ss = new ServerSocket(5000);
-//        ServerSocket ss = new ServerSocket(80);
-//        System.out.println("Server waiting for client request");
-//        Socket s = ss.accept();
-//        System.out.println("Client connected");
-//        BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-//
-//        String str = br.readLine();
-//        System.out.print("Data: " + str);
-//
-//
-//
-//    }
-//
-//}

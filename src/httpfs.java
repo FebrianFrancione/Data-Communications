@@ -1,48 +1,20 @@
-
-import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.regex.*;
+import java.io.*;
+import java.nio.file.Files;
 
 
-public class httpfs implements HttpRequestHandler{
-    public static final String GET= "GET";
-    public static final String POST = "POST";
+
+public class httpfs implements req_handler {
     public static final String HTTP_VERSION = "HTTP/1.0";
 
-    DateTimeFormatter date =DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss");
-    //    "EEE, dd MMM yyyy HH:mm:ss O"
-    private String rootDir;
-    //default
-    public httpfs(){
-        this.rootDir = System.getProperty("user.dir");
-    }
-    public httpfs(String rootDir){
-        this.rootDir = rootDir;
+    DateTimeFormatter date = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss");
+    private String directory_root;
+    public httpfs(String directory_root){
+        this.directory_root = directory_root;
     }
 
-    public ResponseLibrary handle_request(RequestLibrary http_request){
-        ResponseLibrary http_response = null;
-        if (http_request.getMethod().equalsIgnoreCase(GET)){
-//            request_response = GET_METHOD();
-        	if(http_request.toString().contains("GET /../../")) {
-        		System.out.println("Not permissible to access");
-        		return server.error_response(ResponseLibrary.status_403, "Forbidden access ",  http_request.getUser_agent());
-        	}
-           http_response =  GET_METHOD(http_request);
-            System.out.println(" after get method" + http_response);
-            System.out.println("back to handlerequest");
-        }else if(http_request.getMethod().equalsIgnoreCase(POST)){
-//            request_response = POST_METHOD();
-            //todo
-//            POST_METHOD();
-
-        }
-        return http_response;
-    }
 
     private ResponseLibrary GET_METHOD(RequestLibrary http_request){
         System.out.println("7: Httpfs: GET_METHOD");
@@ -50,8 +22,7 @@ public class httpfs implements HttpRequestHandler{
 //        String path = rootDir + http_request.getRequest();
 //        File file = new File(path);
         //trying to set defAULT rootdir
-        String path = rootDir + "/src/testFile/" ;
-       // System.out.println("path" +path);
+        String path = directory_root + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
 //        System.out.println("HTTPFS: Rootdir: " + rootDir);
 //        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
         //hardcoded
@@ -60,7 +31,6 @@ public class httpfs implements HttpRequestHandler{
 //        path = rootDir+"\\src\\testFile\\hello.txt";
 //        System.out.println("test path: " + path);
         Path file_path = new File(path).toPath();
-        Path readable = Paths.get(path);
         String mimetype = "";
 
         try {
@@ -81,21 +51,34 @@ public class httpfs implements HttpRequestHandler{
 //            System.out.println(pathname);
 //        }
         //////
+        System.out.println("file: " + file );
         if(file.isDirectory()){
-            System.out.println("httpfs 400");
-            return server.error_response(ResponseLibrary.status_400, "Not a file!",  http_request.getUser_agent());
+            File[] file_list = file.listFiles();
+            StringBuilder sb = new StringBuilder();
+            if (file_list.length > 0 && file_list != null){
+                for (File directory : file_list) {
+                    sb.append(directory.getName());
+                    sb.append(directory.isDirectory() ? File.separator + "\n" : "\n");
+                }
+            }
+            else {
+                sb.append("Directory: Empty");
+            }
+//            String status, String message, String user_agent, String content_type
+            return getResponse(ResponseLibrary.status_200, sb.toString(),http_request.getUser_agent(),mimetype);
+//            System.out.println("File is directory");
+//            System.out.println("file inside directory: " + file);
+//            return httpfs.readFiles(file);
+////            return server.error_response(ResponseLibrary.status_400, "Not a file!",  http_request.getUser_agent());
+
             //http server response
         }else if(!file.isFile()) {
-            System.out.println("httpfs 404: not found"+"path");
+            System.out.println("httpfs 404: not found");
+
             return server.error_response(ResponseLibrary.status_404, "Not Found", http_request.getUser_agent());
         } else if(!file.canRead()){
             System.out.println("httpfs 500");
             return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path,  http_request.getUser_agent());
-        }
-        else if(Files.isReadable(readable)) {
-        	System.out.println("File does not have permission to read");
-        	return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path,  http_request.getUser_agent());
-        	
         }
         // http server response
         //in case passes correctly
@@ -116,12 +99,62 @@ public class httpfs implements HttpRequestHandler{
         catch (IOException e){
             http_response = server.error_response(ResponseLibrary.status_500, "I/O file error, file was not read: " + path,  http_request.getUser_agent());
         }
-        System.out.println("before retyurnig : " + http_response);
+        System.out.println("before returning : " + http_response);
         return http_response;
     }
-//        private ResponseLibrary POST_METHOD(){
+    private ResponseLibrary POST_METHOD(RequestLibrary http_request) {
+        try {
+            String file_path = directory_root + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
+            File file_directory = new File(file_path);
+
+            String local_path = file_directory.getParent();
+            File file_folder = new File(local_path);
+            System.out.println(file_path);
+            System.out.println("POST: 1");
+            if (!file_folder.canWrite()) {
+                return server.error_response(ResponseLibrary.status_500, "Writing to directory not possible", http_request.getUser_agent());
+            } else if (!file_folder.isDirectory()) {
+                if (!file_folder.mkdirs()) {
+                    return server.error_response(ResponseLibrary.status_500, "Creating Directory not possible", http_request.getUser_agent());
+                }
+            }
+
+            try {
+                if (!file_directory.exists()) {
+                    file_directory.createNewFile();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (!file_directory.canWrite()) {
+                return server.error_response(ResponseLibrary.status_500, "File cannot be written", http_request.getUser_agent());
+            }
+
+            try {
+                PrintWriter pw = new PrintWriter(file_directory);
+                String file_content = http_request.getBody();
+                if (file_content != null) {
+                    pw.print(file_content);
+                } else {
+                    pw.print("");
+                }
+//            try (PrintWriter pw = new PrintWriter(file_directory)) {
+//                String content = http_request.getBody();
+//                pw.print(content!= null ? content : "");
 //
-//        }
+            }
+            catch (FileNotFoundException e) {
+                System.out.println("Could not write contents to file");
+                e.printStackTrace();
+            }
+
+            return getResponse(ResponseLibrary.status_201, "File was created! ", http_request.getUser_agent(), http_request.getContent_type());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return getResponse(ResponseLibrary.status_201, "File was created!", http_request.getUser_agent(), http_request.getContent_type());
+    }
     private ResponseLibrary getResponse(String status, String message, String user_agent, String content_type){
         int content_length = message.getBytes().length;
         System.out.println("getResponse");
@@ -130,25 +163,16 @@ public class httpfs implements HttpRequestHandler{
     }
 
     @Override
-    public ResponseLibrary handleRequest(RequestLibrary httpRequest) {
+    public ResponseLibrary request_handler(RequestLibrary httpRequest) {
         ResponseLibrary httpResponse = null;
         if (httpRequest.getMethod().equalsIgnoreCase(httpRequest.GET)) {
+            //calling get
             httpResponse = GET_METHOD(httpRequest);
         }
         else if (httpRequest.getMethod().equalsIgnoreCase(httpRequest.POST)) {
-//            httpResponse = POST_METHOD(httpRequest);
+//calling post
+            httpResponse = POST_METHOD(httpRequest);
         }
         return httpResponse;
-    }
-    
-    //handling security issue for ..//
-    private void handleIllegalAccess(String path) {
-    	boolean illegal = false;
-    	if(path.contains("/../../")) {
-    		illegal = true;
-    	}
-    	else {
-    		illegal = false;
-    	}
     }
 }
