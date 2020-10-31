@@ -23,9 +23,6 @@ class RequestException extends Exception{
 //        super(message);
 //    }
 //}
-
-
-
 //server used for base for httpfs
 public class server{
 
@@ -47,7 +44,7 @@ public class server{
         if (debug) System.out.println("Server is running ");
 
         while(true){
-            System.out.println("File HttpServer: While still true");
+            System.out.println("1");
 //            try (Socket socket = serverSocket.accept();
 //                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 //                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
@@ -62,23 +59,28 @@ public class server{
 //                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
                 RequestLibrary http_request = null;
                 ResponseLibrary http_response = null;
-                System.out.println("Serversocket accepted!");
-                System.out.println("httprequest: " + http_request);
-                System.out.println("httpresponse: " + http_response);
+//                System.out.println("Serversocket accepted!");
+//                System.out.println("httprequest: " + http_request);
+//                System.out.println("httpresponse: " + http_response);
                 if (debug == true){
                     System.out.println("Server contacted by " + socket.getInetAddress());
                 }
 
                 try{
 //                    new RequestLibrary(method, requestURI, httpVersion, entityBody, content_length);
-                    System.out.println("Extracting request for http request");
+//                    System.out.println("Extracting request for http request");
+                    System.out.println(":Server");
                     http_request = extractRequest(in);
 //if(debug) System.out.println("Request: " + http_request);
                     //todo
                     //do extract and enter the 6 vaariables
+                    System.out.println("5: Run()");
                     System.out.println("httprequest is now: " + http_request);
+                    System.out.println("----------");
                     http_response = requestHandler.handleRequest(http_request);
-                    System.out.println("server: " + http_request + "end server");
+                    System.out.println("6: got http_response sends back to client " + http_response);
+
+//                    System.out.println("server: " + http_request + "end server");
 //                    http_response = http_request.getMethod(),http_request.getRequest(),http_request.getHttp_version(),http_request.getBody(),http_request.getContent_length()
                 }catch (HeaderException e){
                     http_response = error_response(ResponseLibrary.status_500, e.getMessage());
@@ -86,11 +88,17 @@ public class server{
                     http_response = error_response(ResponseLibrary.status_400, e.getMessage());
                 }
                 // need to seperate erros to get a secodn error for400 bad request
-                out.print(http_response.toString());
+                System.out.println("httpresponse to string " + http_response.toString() + "end");
+                String response_body = http_response.toString();
+
+//                    out.print(http_response.toString());
+
+                out.print(response_body);
                 out.flush();
 
+
             } catch (IOException ioe) {
- //cant send 400 0r 500 error
+                //cant send 400 0r 500 error
             }
         }
 
@@ -99,9 +107,10 @@ public class server{
     //    private RequestLibrary extractRequest(BufferedReader in) throws HttpRequestFormatException, HeaderIOException{
     private RequestLibrary extractRequest(BufferedReader in) throws HeaderException, RequestException{
         ArrayList<String> headerLines;
-        System.out.println("File HttpServer: Entered here for extract request");
+//        System.out.println("File HttpServer: Entered here for extract request");
+        System.out.println("3: extract Request");
         try{
-            System.out.println("getting Header: ");
+//            System.out.println("getting Header: ");
             boolean justReadCRLF = false;
             boolean cr = false;
             int fromServer;
@@ -132,7 +141,7 @@ public class server{
                 }
             }
             headerLines = header;
-            System.out.println("extractRequest: HeaderLines: " + headerLines);
+            System.out.println("HeaderLines: " + headerLines);
 //            headerLines = getHeader(in);
         }catch(IOException e){
             System.out.println("Could not extract HTTP header");
@@ -143,6 +152,20 @@ public class server{
 
 
         String[]requestLineArgs = headerLines.get(0).split("\\s+");
+        String[]agenttest1 = headerLines.get(1).split("\\s+");
+//        System.out.println(agenttest1[0] + " ----- " + agenttest1[1]);
+
+//        System.out.println("testing headerLines: " + headerLines);
+//        System.out.println("0: "+headerLines.get(0));
+//        System.out.println("1: "+headerLines.get(1));
+//        if(userAgentIsSet){
+//            String[]agenttest = headerLines.get(1).split("\\s+");
+//            System.out.println("Split agent line: " + agenttest[0] + " :split: " + agenttest[1]);
+//            user_agent = agenttest[1];
+//            System.out.println("Updated user-agent in true: " + user_agent);
+//        }
+//        System.out.println(user_agent);
+
         if(requestLineArgs.length != 3){
             throw new RequestException("request ill formed (three header objects required): " + headerLines.get(0) + "\n");
         }
@@ -150,12 +173,12 @@ public class server{
         String method = requestLineArgs[0];
         String requestURI = requestLineArgs[1];
         String httpVersion = requestLineArgs[2];
-//        String user_agent = requestLineArgs[3];
+        String user_agent = agenttest1[1];
         System.out.println("--------------");
         System.out.println("Method: " + method);
         System.out.println("URI: " + requestURI);
         System.out.println("HTTP: " + httpVersion);
-//        System.out.println("User-Agent: " + user_agent);
+        System.out.println("User Agent: " + user_agent);
         System.out.println("--------------");
 
         //todo
@@ -176,27 +199,49 @@ public class server{
 
         //parsing header lines
         boolean contentLengthisSet = false;
+        boolean userAgentIsSet = false;
         int content_length = 0;
 
 
         //todo
         //look into and makew better
+//        String user_agent = "";
         for (String line : headerLines) {
-            if (line.trim().toLowerCase().matches("^content-length: [0-9]+$")) {
+//            System.out.println("LINE:" + line);
+//            System.out.println("line trimmed:" + line.trim().toLowerCase());
+            line = line.trim().toLowerCase();
+            if (line.matches("(content\\-length: )(.*)")) {
                 content_length = Integer.parseInt(line.split("\\s")[1]);
                 contentLengthisSet = true;
                 System.out.println("Header content length: " + content_length);
             }
-            //Note: irrelevant header lines are ignored.
-        }
+            else if (line.matches("(user\\-agent: )(.*)")) {
+//                System.out.println("USER AGENT MATCH");
+                userAgentIsSet = true;
+//                String[]agenttest = line.split("\\s+");
+//                System.out.println("Split agent line: " + agenttest[0] + " :split: " + agenttest[1]);
+//                user_agent = agenttest[1];
 
+            }
+        }
+        System.out.println("testing headerLines: " + headerLines);
+        System.out.println("0: "+headerLines.get(0));
+        System.out.println("1: "+headerLines.get(1));
+
+//        if(userAgentIsSet){
+//            String[]agenttest = headerLines.get(1).split("\\s+");
+//            System.out.println("Split agent line: " + agenttest[0] + " :split: " + agenttest[1]);
+//            user_agent = agenttest[1];
+//            System.out.println("Updated user-agent in true: " + user_agent);
+//        }
         if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
             throw new RequestException("No content length for POST");
         }
 
+
         String entityBody = null;
         if (content_length > 0) {
-            System.out.println("Content legnth greater than 0: go for body");
+            System.out.println("Content length greater than 0: go for body");
             try {
 //                entityBody = getBody(in, content_length);
                 int currentChar;
@@ -216,8 +261,10 @@ public class server{
                 throw new HeaderException("Problem reading the entity body.\n");
             }
         }
-        System.out.println("Final build for extract request");
-        return new RequestLibrary(method, requestURI, httpVersion, entityBody, content_length);
+        System.out.println("4");
+        String content_type = "texttest";
+        System.out.println("----------------------");
+        return new RequestLibrary(method, requestURI, httpVersion, entityBody, user_agent, content_length, content_type);
     }
 
 
@@ -282,7 +329,7 @@ public class server{
         int content_length = message.getBytes().length;
         DateTimeFormatter date = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
 //        ResponseLibrary test = new ResponseLibrary();
-        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), content_length, message, "");
+        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()),"null", content_length, message,"null" );
     }
 }
 

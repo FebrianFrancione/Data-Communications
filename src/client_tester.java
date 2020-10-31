@@ -1,7 +1,5 @@
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.io.File;
 
 
 public class client_tester {
@@ -25,11 +23,20 @@ public class client_tester {
 //        String f = file.getName();
 //        System.out.println("'" + path + "'" + "\n" + f);
 
-
+        System.out.println("client request: " + "GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
         pr.println("GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n");
 
 //        pr.println("\n");
 //        pr.println("POST /test3  HTTP/1.0\r\n");
         pr.flush();
+
+        InputStreamReader in = new InputStreamReader(client.getInputStream());
+        BufferedReader bf = new BufferedReader(in);
+        System.out.println("Server response: ");
+        String str = bf.readLine();
+        while(str != null) {
+            System.out.println(str);
+            str = bf.readLine();
+        }
     }
 }
