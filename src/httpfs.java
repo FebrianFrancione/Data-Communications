@@ -2,8 +2,10 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.*;
 
 
 public class httpfs implements HttpRequestHandler{
@@ -53,6 +55,7 @@ public class httpfs implements HttpRequestHandler{
 //        path = rootDir+"\\src\\testFile\\hello.txt";
 //        System.out.println("test path: " + path);
         Path file_path = new File(path).toPath();
+        Path readable = Paths.get(path);
         String mimetype = "";
 
         try {
@@ -83,6 +86,11 @@ public class httpfs implements HttpRequestHandler{
         } else if(!file.canRead()){
             System.out.println("httpfs 500");
             return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path,  http_request.getUser_agent());
+        }
+        else if(Files.isReadable(readable)) {
+        	System.out.println("File does not have permission to read");
+        	return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path,  http_request.getUser_agent());
+        	
         }
         // http server response
         //in case passes correctly
@@ -126,5 +134,16 @@ public class httpfs implements HttpRequestHandler{
 //            httpResponse = POST_METHOD(httpRequest);
         }
         return httpResponse;
+    }
+    
+    //handling security issue for ..//
+    private void handleIllegalAccess(String path) {
+    	boolean illegal = false;
+    	if(path.contains("/../../")) {
+    		illegal = true;
+    	}
+    	else {
+    		illegal = false;
+    	}
     }
 }

@@ -4,6 +4,7 @@ public class ResponseLibrary {
     public static final String status_201 = "201: Created";
     public static final String status_400 = "400: Bad request";
     public static final String status_404 = "404: Not Found";
+    public static final String status_403 = "403: FORBIDDEN";
     public static final String status_500 = "500: Internal Error";
     public static final String status_66 = "Execute Order 66";
 
