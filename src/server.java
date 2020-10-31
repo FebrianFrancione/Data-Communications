@@ -266,7 +266,33 @@ public class server{
         System.out.println("----------------------");
         return new RequestLibrary(method, requestURI, httpVersion, entityBody, user_agent, content_length, content_type);
     }
-
+    
+    private void getContentType(String file, PrintWriter writer) throws Exception {
+		String extension = "";
+		int dot = file.lastIndexOf('.');
+		if (dot > 0) 
+		{
+		    extension = file.substring(dot + 1);
+		}
+		if (extension.equals("txt"))
+		{
+			String keyVal[] = new String[2];
+	        for (int i = 0; i < keyVal.length; i++)
+	        {
+	        	if(i == 1)
+	        	{
+	        		keyVal[i] = "Content-Type:text";     		
+	        	}
+	        	if(i == 2)
+	        	{
+	        		keyVal[i] = "Content-Disposition: attachment; filename = " + file;     		
+	        	}
+	        	writer.print(keyVal[i]);     	
+	        }
+		}
+        writer.flush();
+        writer.close();
+	}
 
 //    private String getBody(BufferedReader in, int size) throws  IOException{
 //
