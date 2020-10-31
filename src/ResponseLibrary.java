@@ -90,7 +90,7 @@ public class ResponseLibrary {
         return http_version + " " + status + "\r\n" +
                 ((date != null) ? "Date: " + date + "\r\n" : "") +
                 "User-Agent: " + user_agent + "\r\n" +
-                "Content-Length: " + content_length + "\r\n" +
+                ((content_length != 0)? "Content-Length: " + content_length + "\r\n" : "") +
                 ((content_type != null)? "Content-Type: " + content_type + "\r\n" : "") +
                 "\r\n" + // end of header
                 ((content_length > 0 && body != null)? body : "" );

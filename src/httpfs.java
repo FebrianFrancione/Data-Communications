@@ -39,21 +39,24 @@ public class httpfs implements HttpRequestHandler{
     }
 
     private ResponseLibrary GET_METHOD(RequestLibrary http_request){
+        System.out.println("7: Httpfs: GET_METHOD");
         ResponseLibrary http_response = null;
 //        String path = rootDir + http_request.getRequest();
 //        File file = new File(path);
         //trying to set defAULT rootdir
         String path = rootDir + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
-        System.out.println("HTTPFS: Rootdir: " + rootDir);
+//        System.out.println("HTTPFS: Rootdir: " + rootDir);
 //        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
         //hardcoded
         //set default direcoty to this?
 //        path = rootDir+"\\src\\testFile";
 //        path = rootDir+"\\src\\testFile\\hello.txt";
-        System.out.println("test path: " + path);
+//        System.out.println("test path: " + path);
         Path file_path = new File(path).toPath();
+        String mimetype = "";
+
         try {
-            String mimetype = Files.probeContentType(file_path);
+            mimetype = Files.probeContentType(file_path);
             System.out.println("File type: " + mimetype);
         }catch(IOException e){
             e.printStackTrace();
@@ -72,14 +75,14 @@ public class httpfs implements HttpRequestHandler{
         //////
         if(file.isDirectory()){
             System.out.println("httpfs 400");
-            return server.error_response(ResponseLibrary.status_400, "Not a file!");
+            return server.error_response(ResponseLibrary.status_400, "Not a file!",  http_request.getUser_agent());
             //http server response
+        }else if(!file.isFile()) {
+            System.out.println("httpfs 404: not found");
+            return server.error_response(ResponseLibrary.status_404, "Not Found", http_request.getUser_agent());
         } else if(!file.canRead()){
             System.out.println("httpfs 500");
-            return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path);
-        }else if(!file.isFile()) {
-            System.out.println("httpfs 400: non existent");
-            return server.error_response(ResponseLibrary.status_400, "Non-Existent");
+            return server.error_response(ResponseLibrary.status_500, "Cannot read file: " + path,  http_request.getUser_agent());
         }
         // http server response
         //in case passes correctly
@@ -88,17 +91,17 @@ public class httpfs implements HttpRequestHandler{
             String line;
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 sb.append(line + '\n');
-                System.out.println("content of file: " + sb);
+//                System.out.println("content of file: " + sb);
             }
-            System.out.println("Stringbuffer read contents: "+sb.toString());
-            http_response = getResponse(ResponseLibrary.status_200, sb.toString());
+//            System.out.println("Stringbuffer read contents: "+sb.toString());
+            http_response = getResponse(ResponseLibrary.status_200, sb.toString(), http_request.getUser_agent(), mimetype);
             System.out.println("httpfs: httpresponse after get response : " + http_response);
         } catch (FileNotFoundException f){
             //http response
-            http_response = server.error_response(ResponseLibrary.status_500, "File not found: " + path);
+            http_response = server.error_response(ResponseLibrary.status_500, "File not found: " + path,  http_request.getUser_agent());
         }
         catch (IOException e){
-            http_response = server.error_response(ResponseLibrary.status_500, "I/O file error, file was not read: " + path);
+            http_response = server.error_response(ResponseLibrary.status_500, "I/O file error, file was not read: " + path,  http_request.getUser_agent());
         }
         System.out.println("before retyurnig : " + http_response);
         return http_response;
@@ -106,10 +109,10 @@ public class httpfs implements HttpRequestHandler{
 //        private ResponseLibrary POST_METHOD(){
 //
 //        }
-    private ResponseLibrary getResponse(String status, String message){
+    private ResponseLibrary getResponse(String status, String message, String user_agent, String content_type){
         int content_length = message.getBytes().length;
         System.out.println("getResponse");
-        return new ResponseLibrary(HTTP_VERSION, status,date.format(ZonedDateTime.now()),null,content_length,null,message);
+        return new ResponseLibrary(HTTP_VERSION, status,date.format(ZonedDateTime.now()),user_agent,content_length,content_type,message);
 //        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()), "test", message, content_length);
     }
 

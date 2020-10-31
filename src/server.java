@@ -83,9 +83,9 @@ public class server{
 //                    System.out.println("server: " + http_request + "end server");
 //                    http_response = http_request.getMethod(),http_request.getRequest(),http_request.getHttp_version(),http_request.getBody(),http_request.getContent_length()
                 }catch (HeaderException e){
-                    http_response = error_response(ResponseLibrary.status_500, e.getMessage());
+                    http_response = error_response(ResponseLibrary.status_500, e.getMessage(), http_request.getUser_agent());
                 }catch(RequestException e){
-                    http_response = error_response(ResponseLibrary.status_400, e.getMessage());
+                    http_response = error_response(ResponseLibrary.status_400, e.getMessage(), http_request.getUser_agent());
                 }
                 // need to seperate erros to get a secodn error for400 bad request
                 System.out.println("httpresponse to string " + http_response.toString() + "end");
@@ -325,11 +325,13 @@ public class server{
 //        return header;
 //    }
 
-    public static ResponseLibrary error_response(String status, String message){
-        int content_length = message.getBytes().length;
+    public static ResponseLibrary error_response(String status, String message, String user_agent){
+        int content_length = 0;
+//        int content_length = message.getBytes().length;
         DateTimeFormatter date = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
 //        ResponseLibrary test = new ResponseLibrary();
-        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()),"null", content_length, message,"null" );
+
+        return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()),user_agent, content_length, null,"null" );
     }
 }
 
