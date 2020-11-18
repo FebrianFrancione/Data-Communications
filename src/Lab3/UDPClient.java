@@ -1,35 +1,107 @@
 package Lab3;
 
-import javax.xml.crypto.Data;
+/*import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;*/
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
-public class UDPClient implements Runnable {
+import static java.nio.channels.SelectionKey.OP_READ;
 
-    private final int PORT;
+public class UDPClient {
 
-    public UDPClient(int port) {
-        PORT = port;
+  /*  private static final Logger logger = LoggerFactory.getLogger(UDPClient.class);*/
+
+    private static void runClient(SocketAddress routerAddr, InetSocketAddress serverAddr) throws IOException {
+        try(DatagramChannel channel = DatagramChannel.open()){
+            String msg = "Hello World";
+            Packet p = new Packet.Builder()
+                    .setType(0)
+                    .setSequenceNumber(1L)
+                    .setPortNumber(serverAddr.getPort())
+                    .setPeerAddress(serverAddr.getAddress())
+                    .setPayload(msg.getBytes())
+                    .create();
+            channel.send(p.toBuffer(), routerAddr);
+            System.out.println("Sending: "+ msg + " to router at: " + routerAddr);
+          /*  logger.info("Sending \"{}\" to router at {}", msg, routerAddr);*/
+
+            // Try to receive a packet within timeout.
+            channel.configureBlocking(false);
+            Selector selector = Selector.open();
+            channel.register(selector, OP_READ);
+            System.out.println("Waiting for response");
+         /*   logger.info("Waiting for the response");*/
+            selector.select(5000);
+
+            Set<SelectionKey> keys = selector.selectedKeys();
+            if(keys.isEmpty()){
+                System.out.println("No response after timeout");
+            /*    logger.error("No response after timeout");*/
+                return;
+            }
+
+            // We just want a single response.
+            ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
+            SocketAddress router = channel.receive(buf);
+            buf.flip();
+            Packet resp = Packet.fromBuffer(buf);
+            System.out.println("Packet: " + resp);
+            System.out.println("Router: " + router);
+//            logger.info("Packet: {}", resp);
+//            logger.info("Router: {}", router);
+            String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
+            System.out.println("Payload: " + payload);
+//            logger.info("Payload: {}",  payload);
+
+            keys.clear();
+        }
     }
 
-    @Override
-    public void run(){
-        try(DatagramSocket clientSocket = new DatagramSocket(PORT)){
-            byte[] buffer = new byte[65507];
-            clientSocket.setSoTimeout(3000);
-            while(true){
-                DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
-                clientSocket.receive(datagramPacket);
+    public static void main(String[] args) throws IOException {
+  /*      OptionParser parser = new OptionParser();
+        parser.accepts("router-host", "Router hostname")
+                .withOptionalArg()
+                .defaultsTo("localhost");
 
-                String receivedMessage = new String(datagramPacket.getData());
-                System.out.println(receivedMessage);
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("Timeout. Client closing");
-        }
+        parser.accepts("router-port", "Router port number")
+                .withOptionalArg()
+                .defaultsTo("3000");
+
+        parser.accepts("server-host", "EchoServer hostname")
+                .withOptionalArg()
+                .defaultsTo("localhost");
+
+        parser.accepts("server-port", "EchoServer listening port")
+                .withOptionalArg()
+                .defaultsTo("8007");
+
+        OptionSet opts = parser.parse(args);*/
+
+        // Router address
+//        String routerHost = (String) opts.valueOf("router-host");
+        String routerHost = "localhost";
+/*        int routerPort = Integer.parseInt((String) opts.valueOf("router-port"));*/
+        int routerPort = 3000;
+
+        // Server address
+      /*  String serverHost = (String) opts.valueOf("server-host");*/
+        String serverHost ="localhost";
+    //        int serverPort = Integer.parseInt((String) opts.valueOf("server-port"));
+        int serverPort = 8007;
+
+        SocketAddress routerAddress = new InetSocketAddress(routerHost, routerPort);
+        InetSocketAddress serverAddress = new InetSocketAddress(serverHost, serverPort);
+
+        runClient(routerAddress, serverAddress);
     }
 }
