@@ -1,34 +1,69 @@
 package Lab3;
 
-
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.DatagramChannel;
 
-public class UDPServer implements Runnable{
-    private final int clientPort;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 
-    public UDPServer(int clientPort){
-        this.clientPort = clientPort;
-    }
+public class UDPServer {
 
-    @Override
-    public void run(){
-        //Datagram socket since we;re using UDP
-        try(DatagramSocket serverSocket = new DatagramSocket(80)){
-            for(int i =0; i< 3; i++){
-                String message = "Message number " + i;
-                //Datagram packet since using UDP, takes bytes, length, ip,
-                DatagramPacket datagramPacket = new DatagramPacket(message.getBytes(), message.length(), InetAddress.getLocalHost(), clientPort);
-                serverSocket.send(datagramPacket);
+ /*   private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);*/
+
+    private void listenAndServe(int port) throws IOException {
+
+        try (DatagramChannel channel = DatagramChannel.open()) {
+            channel.bind(new InetSocketAddress(port));
+            System.out.println("EchoServer is listening at: " + channel.getLocalAddress());
+           /* logger.info("EchoServer is listening at {}", channel.getLocalAddress());*/
+            ByteBuffer buf = ByteBuffer
+                    .allocate(Packet.MAX_LEN)
+                    .order(ByteOrder.BIG_ENDIAN);
+
+            for (; ; ) {
+                buf.clear();
+                SocketAddress router = channel.receive(buf);
+
+                // Parse a packet from the received raw data.
+                buf.flip();
+                Packet packet = Packet.fromBuffer(buf);
+                buf.flip();
+
+                String payload = new String(packet.getPayload(), UTF_8);
+                System.out.println("Packet: " + packet);
+                System.out.println("Payload: " + payload);
+                System.out.println("Router: " + router);
+            /*    logger.info("Packet: {}", packet);
+                logger.info("Payload: {}", payload);
+                logger.info("Router: {}", router);*/
+
+                // Send the response to the router not the client.
+                // The peer address of the packet is the address of the client already.
+                // We can use toBuilder to copy properties of the current packet.
+                // This demonstrate how to create a new packet from an existing packet.
+                Packet resp = packet.toBuilder()
+                        .setPayload(payload.getBytes())
+                        .create();
+                channel.send(resp.toBuffer(), router);
+
             }
-
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
+    public static void main(String[] args) throws IOException {
+    /*    OptionParser parser = new OptionParser();
+        parser.acceptsAll(asList("port", "p"), "Listening port")
+                .withOptionalArg()
+                .defaultsTo("8007");
+
+        OptionSet opts = parser.parse(args);*/
+    /*    int port = Integer.parseInt((String) opts.valueOf("port"));*/
+        int port = 8007;
+        UDPServer server = new UDPServer();
+        server.listenAndServe(port);
+    }
 }
