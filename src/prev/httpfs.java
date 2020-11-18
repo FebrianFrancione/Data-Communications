@@ -1,3 +1,5 @@
+package prev;
+
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,13 +24,13 @@ public class httpfs implements req_handler {
 //        String path = rootDir + http_request.getRequest();
 //        File file = new File(path);
         //trying to set defAULT rootdir
-        String path = directory_root + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
+        String path = directory_root + "\\src\\prev.Charsets.testFile\\" + http_request.getRequest().replace('/','\\');
 //        System.out.println("HTTPFS: Rootdir: " + rootDir);
 //        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
         //hardcoded
         //set default direcoty to this?
-//        path = rootDir+"\\src\\testFile";
-//        path = rootDir+"\\src\\testFile\\hello.txt";
+//        path = rootDir+"\\src\\prev.Charsets.testFile";
+//        path = rootDir+"\\src\\prev.Charsets.testFile\\hello.txt";
 //        System.out.println("test path: " + path);
         Path file_path = new File(path).toPath();
         String mimetype = "";
@@ -104,7 +106,7 @@ public class httpfs implements req_handler {
     }
     private ResponseLibrary POST_METHOD(RequestLibrary http_request) {
         try {
-            String file_path = directory_root + "\\src\\testFile\\" + http_request.getRequest().replace('/','\\');
+            String file_path = directory_root + "\\src\\prev.Charsets.testFile\\" + http_request.getRequest().replace('/','\\');
             File file_directory = new File(file_path);
 
             String local_path = file_directory.getParent();

@@ -1,3 +1,5 @@
+package prev;
+
 import java.net.Socket;
 import java.util.Scanner;
 import java.io.*;
