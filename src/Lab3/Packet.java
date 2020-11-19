@@ -15,6 +15,7 @@ public class Packet {
     public static final int MIN_LEN = 11;
     public static final int MAX_LEN = 11 + 1013; // or just 1024
 
+
     private final int type;
     private final long sequenceNumber;
     private final InetAddress peerAddress;
@@ -42,6 +43,11 @@ public class Packet {
         this.peerAddress = peerAddress;
         this.peerPort = peerPort;
         this.payload = payload;
+    }
+
+    public static Packet HandshakePacket(int type, InetAddress peerAddress, int portNumber) {
+//        return buildHandshakePacket(2, peerAddress, portNumber, 11111111);
+        return new Packet(type, 11111111, peerAddress, portNumber, "".getBytes());
     }
 
     public int getType() {
