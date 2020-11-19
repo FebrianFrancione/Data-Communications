@@ -1,6 +1,7 @@
 package Lab3;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -11,13 +12,22 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 
 public class UDPServer {
- /*   private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);*/
+    /*   private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);*/
 
     public static void main(String[] args) throws IOException {
         int port = 8007;
         UDPServer server = new UDPServer();
+//        server.threeWayListen(port);
         server.listenAndServe(port);
     }
+
+/*    private void threeWayListen(int port) throws IOException {
+        try (DatagramChannel channel = DatagramChannel.open()) {
+            // bind channel to inetaddress
+            channel.bind(new InetSocketAddress(port));
+
+        }
+    }*/
 
     private void listenAndServe(int port) throws IOException {
         try (DatagramChannel channel = DatagramChannel.open()) {
@@ -36,6 +46,11 @@ public class UDPServer {
                 Packet packet = Packet.fromBuffer(buf);
                 buf.flip();
 
+                if (packet.getType() == 2){
+                    System.out.println("SYN received");
+                }
+
+
                 String payload = new String(packet.getPayload(), UTF_8);
                 System.out.println("Packet: " + packet);
                 System.out.println("Payload: " + payload);
@@ -46,10 +61,12 @@ public class UDPServer {
                 // The peer address of the packet is the address of the client already.
                 // We can use toBuilder to copy properties of the current packet.
                 // This demonstrate how to create a new packet from an existing packet.
-                Packet resp = packet.toBuilder()
+                System.out.println("Sending SYN-ACK to router");
+                Packet resp = packet.toBuilder().setType(3)
                         .setPayload(payload.getBytes())
                         .create();
                 channel.send(resp.toBuffer(), router);
+
             }
         }
     }

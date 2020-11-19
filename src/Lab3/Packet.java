@@ -21,17 +21,21 @@ public class Packet {
     private final int peerPort;
     private final byte[] payload;
 
-    // setting boolean for ACK
-    private boolean ACK;
+    /*
+    Packet Structure
+    0 - Packet type -> 1 byte: Data, ACK, SYN, SYN-ACK, NAK
+    1..4 - Seq# -> 4 bytes big-endian
+    5..8 - Peer Address -> 4 bytes for IPv4
+    9..10 - Peer Port Number-> 2 bytes big-endian
+    11.. -> Payload -> 0 to 1013 bytes
 
-    public boolean isACK() {
-        return ACK;
-    }
 
-    public void setACK(boolean ACK) {
-        this.ACK = ACK;
-    }
+  mapping for pkt type: 0->data, 1->ACK, 2->SYN, 3->SYN-ACK, 4->NAK
+    SYN is used by client when 1/3 handshake to server
+    SYN-ACK used by server in 2/3 to client
 
+    MIN size of packet MUST be 11 and MAX size is 1024
+     */
     public Packet(int type, long sequenceNumber, InetAddress peerAddress, int peerPort, byte[] payload) {
         this.type = type;
         this.sequenceNumber = sequenceNumber;
@@ -94,6 +98,7 @@ public class Packet {
         ByteBuffer buf = ByteBuffer.allocate(MAX_LEN).order(ByteOrder.BIG_ENDIAN);
         write(buf);
         buf.flip();
+        System.out.println("to Buffer: " + buf);
         return buf;
     }
 
@@ -111,10 +116,15 @@ public class Packet {
      * fromBuffer creates a packet from the given ByteBuffer in BigEndian.
      */
     public static Packet fromBuffer(ByteBuffer buf) throws IOException {
-        if (buf.limit() < MIN_LEN || buf.limit() > MAX_LEN) {
+        if (buf.limit() < MIN_LEN ){
+            System.out.println("buf limit: " + buf.limit());
+            throw new IOException("Too short");
+        }
+        else if (buf.limit() < MIN_LEN || buf.limit() > MAX_LEN) {
             throw new IOException("Invalid length");
         }
 
+        System.out.println("buf limit 2: " + buf.limit());
         Builder builder = new Builder();
 
         builder.setType(Byte.toUnsignedInt(buf.get()));
@@ -155,6 +165,7 @@ public class Packet {
 
         public Builder setType(int type) {
             this.type = type;
+            System.out.println("Packet type: " + type);
             return this;
         }
 
