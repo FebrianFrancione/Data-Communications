@@ -1,0 +1,87 @@
+1 - Re implement A1 and A2 using UDP
+2 - implement core tcp functionalities mimicking TCP-three way handshaking
+3 - Endianness: https://stackoverflow.com/questions/35774452/sending-udp-packets-in-the-correct-endianness
+
+3way Handshake:
+https://medium.com/@maxterjy/tcp-three-way-handshake-e367dc12598f
+client initializes sending SYN(contains seq#0 and no ack #), server sends SYN-ACK(ack # sent and acknowledges seq#0 from client) then finally, ACK(client)
+assume buffer size and seq range is the same and hardcoded.
+
+
+
+
+Datagram packet for sending data = DatagramPacket dp = new DatagramPacket(data, datalength, ip address, port);
+data is in byte format only ex; int i=8 -> convert to byte byte[] b = (i+"").getBytes();
+
+DatagramChannel vs DatagramSocket
+
+DatagramChannel:
+http://tutorials.jenkov.com/java-nio/datagram-channel.html
+remains open until it is closed
+supports multithreading aned concurrency -> useful for the optional multi clients part
+
+DatagramSocket:
+blocking
+setSoTimeout{ related to timer: rdt 3.0: dynamic timer = EstimatedRTT = (1-alpha)*estimatedRTT + alpha*SampleRTT where alpha = 0.125 and inital estimatedRTT = 0
+deviationRTT = (1-beta)*Devrtt+beta*|SampleRTT-EstimatedRTT| where beta = 0.25
+TimeoutInterval = EstimatedRTT(estimated RTT) + 4*DevRTT(safety margin)
+SampleRTT = amount of time send one pkt and receive ack.}
+send/receive(Datagram Packet) = to router
+router will know where to send info from the datagram pkt obj
+
+
+Datagram pkt:
+-Packet type
+-Seq #
+-Peer address
+-Peer Port Number
+-Payload if payload larger than 1024 bytes -> segment the packet into parts where the payload is segemtned, seq# changed and the other fields copied.
+
+Minimum packet size 11 bytes, max 1024
+DatagramPacket(byte[] buf, int length, inetaddress, port) buf = min 11 bytes, max 1024
+
+
+
+RDT 1.0:
+underlying channel 100% reliable - no bit errors, no loss of packets
+sender sends data to channel, receiver reads
+
+RDT 2.0:
+underlying channel may flip bits in packet
+ - checksum must be implemented to detect bit errors.
+ https://stackoverflow.com/questions/1480580/udp-checksum-calculation
+ https://gist.github.com/fxlv/81209bbd150abfeaceb1f85ff076c9f3
+
+ Recover:
+ ACK: receiver tells sender pkt is OK
+ NAK: receiver tell sender pkt has errors
+ Fatal flaw: if ack/nak is corrupt, sender can't know what happened at receiver
+ cannot retransmit - duplicate
+
+ Handling dup:
+    sender resends current pkt if ack/nak corrupted
+    sender adds sequence num to each pkt
+    receiver discards duplicate pkt
+    ---> Stop&Wait
+    sender sends one pkt
+
+ RDT 2.1:
+ seq# added (to pkt)
+
+ only 2 seq# needd - 0,1
+ Must check if ack/nak corrupt -> states:is expected pkt 0 or 1?
+ receiver:
+ check if dup pkt -> state shows 0 or 1 is expected pkt #
+ !! receiver cannot know if last ack/nak received ok at sender
+
+ rdt 2.2: nak free
+ only ACKs, receiver sends ack for last pkt received OK (receiver must explicitly include seq# of ACK pkt)
+ dup ACK @ sender results in same action as NAK: retransmit curr pkt
+
+ RDT 3.0: errors and loss
+ pkts(ack,data) can be lost
+ sol: sender waits amount of time for ACK
+ - retransmits if no ACK @ time.
+ - if pkt lost (or ACK) just delayed: retransmission will be duplicate (seq# handles this)
+ receiver must specify seq# of pkt being ACKed
+ !!needs countdown timer
