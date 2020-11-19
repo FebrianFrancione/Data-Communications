@@ -1,5 +1,6 @@
 # Data-Communications-A1
-COMP 445 A1
+COMP 445 Assignments 1-3
+HTTP client, HTTP File server and UDP datagramChannel implementing the various RDT(Reliable Data Transfers 1.0-3.0)
 
 A commons cli dependency is reuqired to run the program. 
 1) Download package from here: https://commons.apache.org/proper/commons-cli/download_cli.cgi
