@@ -7,12 +7,12 @@ import org.apache.commons.cli.*;
 
 public class client{
 
-    private static final int DEFAULT_PORT = 80;
+    private static final int DEFAULT_PORT = 8080;
     public static void main(String[]args){
         Options command_option = getParserOptions();
         System.out.println(command_option);
         DefaultParser command_parser = new DefaultParser();
-        System.out.println("command parser: " + command_parser);
+        System.out.println("COMMAND PARSER: " + command_parser);
         CommandLine parsedOptions = null;
 
         try{

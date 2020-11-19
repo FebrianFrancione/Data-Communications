@@ -24,7 +24,7 @@ public class server{
     private req_handler requestHandler;
     private boolean debug;
     private int port;
-    public static final String HTTP_VERSION = "HTTP/1.0";
+    public static final String HTTP_VERSION = "HTTP/1.1";
 
     public server(int portNumber, req_handler requestHandler, boolean debug) {
         this.port = portNumber;
@@ -53,14 +53,14 @@ public class server{
                 }
 
                 try{
-
-                    System.out.println(":Server");
+                    System.out.println("2:Server");
                     http_request = extractRequest(in);
                     System.out.println("5: Run()");
                     System.out.println("httprequest is now: " + http_request);
                     System.out.println("----------");
                     http_response = requestHandler.request_handler(http_request);
-                    System.out.println("6: got http_response sends back to client " + http_response);
+                    //contentType(file, out);
+                    //System.out.println("6: got http_response sends back to client " + http_response);
 
                 }catch (HeaderException e){
                     http_response = error_response(ResponseLibrary.status_500, e.getMessage(), http_request.getUser_agent());
@@ -68,7 +68,7 @@ public class server{
                     http_response = error_response(ResponseLibrary.status_400, e.getMessage(), http_request.getUser_agent());
                 }
 
-                System.out.println("http response to string " + http_response.toString() + "end");
+                //System.out.println("http response to string " + http_response.toString() + "end");
                 String response_body = http_response.toString();
 
 
@@ -101,7 +101,7 @@ public class server{
 
                 if(carriage_line && current_char == '\n'){
                     header.add(sb.toString());
-                    sb =new StringBuilder();
+                    sb = new StringBuilder();
                     if(carriage_line_return){
                         break;
                     }
@@ -132,18 +132,6 @@ public class server{
 
         String[]requestLineArgs = headers.get(0).split("\\s+");
         String[]agenttest1 = headers.get(1).split("\\s+");
-//        System.out.println(agenttest1[0] + " ----- " + agenttest1[1]);
-
-//        System.out.println("testing headerLines: " + headerLines);
-//        System.out.println("0: "+headerLines.get(0));
-//        System.out.println("1: "+headerLines.get(1));
-//        if(userAgentIsSet){
-//            String[]agenttest = headerLines.get(1).split("\\s+");
-//            System.out.println("Split agent line: " + agenttest[0] + " :split: " + agenttest[1]);
-//            user_agent = agenttest[1];
-//            System.out.println("Updated user-agent in true: " + user_agent);
-//        }
-//        System.out.println(user_agent);
 
         if(requestLineArgs.length != 3){
             throw new RequestException("rHeaders must have 3 components " + headers.get(0));
@@ -198,30 +186,18 @@ public class server{
             else if (line.matches("(user\\-agent: )(.*)")) {
 //                System.out.println("USER AGENT MATCH");
                 userAgentIsSet = true;
-//                String[]agenttest = line.split("\\s+");
-//                System.out.println("Split agent line: " + agenttest[0] + " :split: " + agenttest[1]);
-//                user_agent = agenttest[1];
 
             }
         }
         String user_agent = "";
         if(userAgentIsSet) {
             user_agent = agenttest1[1];
-            System.out.println("User Agent: " + user_agent);
+            //System.out.println("User Agent: " + user_agent);
         }
-        System.out.println("testing headerLines: " + headers);
-        System.out.println("0: "+headers.get(0));
-        System.out.println("1: "+headers.get(1));
-
-//        if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
-//        if(!contentLengthisSet && method.equalsIgnoreCase(RequestLibrary.POST)){
-//            throw new RequestException("No content length for POST");
-//        }
-
 
         String body = null;
         if (content_length > 0) {
-            System.out.println("Content length greater than 0: go for body");
+            //System.out.println("Content length greater than 0: go for body");
             try {
                 int bytes = 0;
                 int current_char;
@@ -281,7 +257,6 @@ public class server{
 //        int content_length = message.getBytes().length;
         DateTimeFormatter date = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
 //        ResponseLibrary test = new ResponseLibrary();
-
         return new ResponseLibrary(HTTP_VERSION, status, date.format(ZonedDateTime.now()),user_agent, content_length, null,"null" );
     }
 }

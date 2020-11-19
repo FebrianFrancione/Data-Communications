@@ -1,5 +1,4 @@
 package prev;
-
 import java.net.Socket;
 import java.util.Scanner;
 import java.io.*;
@@ -10,8 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RequestLib {
-	private final int PORT  = 80;
-	private final String VERSION = "HTTP/1.0";
+	private final int PORT  = 8080;
+	private final String VERSION = "HTTP/1.1";
 	private final String USER_AGENT = "USER-AGENT: MyAwesomeBrowser";
 	Pattern pattern;
     Matcher matcher;
@@ -41,8 +40,6 @@ public class RequestLib {
 				}
 			}
 		}
-		//System.out.println(keyVal);
-		//System.out.println(uri.getQuery() +" hello "+ uri.getHost() + url.getHost() +" fdf "+ uri.getPath() + "   gfg  " + url.getFile());
 		socket = new Socket(uri.getHost(), PORT);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new PrintWriter(socket.getOutputStream());
