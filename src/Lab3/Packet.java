@@ -21,6 +21,16 @@ public class Packet {
     private final int peerPort;
     private final byte[] payload;
 
+    // setting boolean for ACK
+    private boolean ACK;
+
+    public boolean isACK() {
+        return ACK;
+    }
+
+    public void setACK(boolean ACK) {
+        this.ACK = ACK;
+    }
 
     public Packet(int type, long sequenceNumber, InetAddress peerAddress, int peerPort, byte[] payload) {
         this.type = type;
@@ -28,6 +38,7 @@ public class Packet {
         this.peerAddress = peerAddress;
         this.peerPort = peerPort;
         this.payload = payload;
+
     }
 
     public int getType() {
