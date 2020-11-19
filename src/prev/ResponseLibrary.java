@@ -1,5 +1,4 @@
 package prev;
-
 import java.io.File;
 
 public class ResponseLibrary {
@@ -103,11 +102,5 @@ public class ResponseLibrary {
                 ((content_type != null)? "Content-Type: " + content_type + "\r\n" : "") +
                 "\r\n" + // end of header
                 ((content_length > 0 && body != null)? body : "" );
-
-
-
-
     }
-
-
 }

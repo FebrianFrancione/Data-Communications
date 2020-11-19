@@ -1,6 +1,7 @@
 package prev;
 
 import java.util.Scanner;
+import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,13 +28,15 @@ public class Httpc {
 						lib.getWVerbose(entry);
 					}
 					else{
-						lib.get(entry);
+						lib.get("GET localhost:8080/hello.txt HTTP/1.1\r\nUser-Agent: Concordia\r\n\r\n");
 					}
 				}
 				//for post
 				else {
-					//lib.post("post -h \"Content-Type:application/json\" -d '{\"Assignment\": 1}' http://httpbin.org/post");
-					lib.post("post -d \"hello  there\"  http://httpbin.org/post");
+					//lib.post("post -d \"hello  there\"  http://httpbin.org/post");
+					lib.post("post -d \"hello everyone\" http://localhost:8080/randmFyl.txt");
+					//POST /test1234 HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n
+					
 				}
 				System.out.println("Connection Stopped");
 				entry = "Close";
