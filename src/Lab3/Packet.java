@@ -42,7 +42,6 @@ public class Packet {
         this.peerAddress = peerAddress;
         this.peerPort = peerPort;
         this.payload = payload;
-
     }
 
     public int getType() {

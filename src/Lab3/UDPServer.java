@@ -10,6 +10,7 @@ import java.nio.channels.DatagramChannel;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.sort;
 
 public class UDPServer {
     /*   private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);*/
@@ -17,20 +18,44 @@ public class UDPServer {
     public static void main(String[] args) throws IOException {
         int port = 8007;
         UDPServer server = new UDPServer();
-//        server.threeWayListen(port);
-        server.listenAndServe(port);
+        server.threeWayListen(port);
+//        server.listenAndServe(port);
     }
 
-/*    private void threeWayListen(int port) throws IOException {
+    private void threeWayListen(int port) throws IOException {
         try (DatagramChannel channel = DatagramChannel.open()) {
             // bind channel to inetaddress
             channel.bind(new InetSocketAddress(port));
+            ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN).order(ByteOrder.BIG_ENDIAN);
+            System.out.println("EchoServer is listening at: " + channel.getLocalAddress());
+            buf.clear();
+            SocketAddress router = channel.receive(buf);
+            // Parse a packet from the received raw data.
+            buf.flip();
+            Packet packet = Packet.fromBuffer(buf);
+            //what does this flip do?
+            buf.flip();
+
+            //todo: Switch case for the various types of packets
+            switch (packet.getType()){
+                case 1:
+                    System.out.println("Received an ACK Packet!");
+                    channel.connect(router);
+                    System.out.println("Datagram Channel connected");
+                case 2:
+                    // in the case of SYN packet, following fsm structure, needs to wait for ACK from client and send a SYN-ACK back to client
+                    System.out.println("Received a SYN Packet");
+                    Packet resp = packet.toBuilder().setType(3).create();
+                    System.out.println("Sending SYN-ACK to client");
+                    channel.send(resp.toBuffer(), router);
+            }
 
         }
-    }*/
+    }
 
     private void listenAndServe(int port) throws IOException {
         try (DatagramChannel channel = DatagramChannel.open()) {
+
             // bind channel to inetaddress
             channel.bind(new InetSocketAddress(port));
             System.out.println("EchoServer is listening at: " + channel.getLocalAddress());
