@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;*/
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -65,12 +66,15 @@ public class UDPClient {
 
             //create new packet of type SYN, no payload attached
             // todo: What to set sequence Number to? create verification that packet is SYN?
-            Packet p = new Packet.Builder()
-                    .setType(2)
-                    .setSequenceNumber(1L)
-                    .setPortNumber(serverAddr.getPort())
-                    .setPeerAddress(serverAddr.getAddress())
-                    .create();
+//            Packet p = new Packet.Builder()
+//                    .setType(2)
+//                    .setSequenceNumber(1L)
+//                    .setPortNumber(serverAddr.getPort())
+//                    .setPeerAddress(serverAddr.getAddress())
+//                    .setPayload("".getBytes())
+//                    .create();
+
+            Packet p = Packet.HandshakePacket(2,serverAddr.getAddress(), serverAddr.getPort());
 
             System.out.println("Sending SYN packet to router");
             //when sending packet through channel, packet must pass buffer
@@ -102,6 +106,8 @@ public class UDPClient {
             if(resp.getType() != 3){
                 System.out.println("A SYN-ACK packet was expected.");
                 System.exit(0);
+            }else{
+                System.out.println("Received a SYN-ACK packet!");
             }
 
             keys.clear();
@@ -110,14 +116,17 @@ public class UDPClient {
             channel.configureBlocking(true);
 
             //creating ACK packet
-            Packet ACK_pkt = new Packet.Builder()
-                    .setType(1)
-                    .setSequenceNumber(1L)
-                    .setPortNumber(serverAddr.getPort())
-                    .setPeerAddress(serverAddr.getAddress())
-                    .create();
+//            Packet ACK_pkt = new Packet.Builder()
+//                    .setType(1)
+//                    .setSequenceNumber(1L)
+//                    .setPortNumber(serverAddr.getPort())
+//                    .setPeerAddress(serverAddr.getAddress())
+//                    .create();
 
-            System.out.println("Sending SYN packet to router");
+            //creating ACK packet
+            Packet ACK_pkt = Packet.HandshakePacket(1,serverAddr.getAddress(), serverAddr.getPort());
+
+            System.out.println("Sending ACK packet to router");
             //when sending packet through channel, packet must pass buffer
             channel.send(ACK_pkt.toBuffer(), routerAddress);
             System.out.println("-----------------------------");
