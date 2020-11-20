@@ -1,10 +1,6 @@
 package Lab3;
 
-import prev.ResponseLibrary;
-import prev.server;
-
 import java.io.*;
-import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -12,9 +8,9 @@ import java.nio.ByteOrder;
 import java.nio.channels.DatagramChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 import static java.util.Arrays.sort;
 
 public class UDPServer {
@@ -61,7 +57,24 @@ public class UDPServer {
                             }
                             if (request[0].equals("GET")){
                                 // do get request
-                                getProcessing(request);
+                               String msg =  getProcessing(request);
+                                System.out.println("Got string from file, sending back to client");
+                                Packet resp = packet.toBuilder().setType(3)
+                                        .setPayload(msg.getBytes())
+                                        .create();
+                                channel.send(resp.toBuffer(), router);
+//
+//                                String msg = Sample_Request;
+//
+//                                //create new packet
+//                                Packet p = new Packet.Builder()
+//                                        .setType(0)
+//                                        .setSequenceNumber(1L)
+//                                        .setPortNumber(serverAddress.getPort())
+//                                        .setPeerAddress(serverAddress.getAddress())
+//                                        .setPayload(msg.getBytes())
+//                                        .create();
+
 
                             }else if(request[1].equals("POST")){
                                 //do post request
@@ -74,6 +87,7 @@ public class UDPServer {
                             System.out.println("Channel not connected");
                         }
                         break;
+
                     case 1:
                         System.out.println("Received an ACK Packet!");
                         System.out.println("seq# " + packet.getSequenceNumber());
@@ -104,7 +118,7 @@ public class UDPServer {
     }
 
 
-    private void getProcessing(String[] request){
+    private String getProcessing(String[] request) throws IOException {
         System.out.println("Entered get processing");
 
         if(request[1].contains("txt")){
@@ -113,6 +127,12 @@ public class UDPServer {
             //replacing forward slash for now - will be fixed later on
 //
 //            try {
+            Path path = Paths.get("src/Lab3/Files/hello");
+            System.out.println("abs path: " + path.toAbsolutePath());
+            System.out.println("Parent: " + path.getParent());
+            System.out.println("Real Path: " + path.toRealPath());
+            System.out.println("_______________________________");
+
             String filepath = request[1].replace("/", "");
             System.out.println(filepath);
             System.out.println("abs path to hello.txt : " + new java.io.File(filepath).getAbsolutePath());
@@ -175,6 +195,7 @@ public class UDPServer {
 //                http_response = getResponse(ResponseLibrary.status_200, sb.toString(), http_request.getUser_agent(), mimetype);
                 //send status OK!
                 System.out.println("Contents: "+sb.toString() + " mimetype: " + mimetype);
+                return sb.toString();
 //                System.out.println("httpfs: httpresponse after get response : " + http_response);
             } catch (FileNotFoundException f){
                 //http response
@@ -187,8 +208,12 @@ public class UDPServer {
 
         }
 
+        return null;
     }
 }
+
+
+
 
 //    private void listenAndServe(int port) throws IOException {
 //        try (DatagramChannel channel = DatagramChannel.open()) {
