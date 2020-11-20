@@ -3,10 +3,7 @@ package Lab3;
 import prev.ResponseLibrary;
 import prev.server;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -113,41 +110,82 @@ public class UDPServer {
         if(request[1].contains("txt")){
             //text file processing
             //regex on request[1]?
-
             //replacing forward slash for now - will be fixed later on
-            String filepath = request[1].replace("/", "\\");
+//
+//            try {
+            String filepath = request[1].replace("/", "");
             System.out.println(filepath);
-            System.out.println(System.getProperty("user.dir") + filepath);
-            String path = System.getProperty("user.dir") + filepath;
-            Path file_path = new File(path).toPath();
-            System.out.println("file path: " + file_path);
+            System.out.println("abs path to hello.txt : " + new java.io.File(filepath).getAbsolutePath());
+            String abs_path = new java.io.File(filepath).getAbsolutePath();
+//            System.out.println("abs path to hello.txt : " + new java.io.File("hello.txt").getAbsolutePath());
+            System.out.println("user home : " + System.getProperty("user.home"));
+            String user_home = System.getProperty("user.home");
+            System.out.println("user.dir : " + System.getProperty("user.dir"));
+            String user_dir = System.getProperty("user.dir");
+            System.out.println("running from : " + new java.io.File(".").getAbsolutePath());
+//
+//                System.out.println(new java.io.BufferedReader(new java.io.FileReader("hello.txt")).readLine());
+//                System.out.println(new java.io.BufferedReader(new java.io.FileReader("test.txt")).readLine());
+//            } catch (Exception e) {
+//                System.out.println("Not found");
+//            }
+
+            File file = new File("src/Lab3/Files/hello");
+            System.out.println("file: " + file);
+            if(file.exists()){
+                System.out.println("File is a file!");
+            }
+
+
+//            System.out.println(System.getProperty("user.dir") + filepath);
+//            String path = System.getProperty("user.dir") + filepath;
+//            Path file_path = new File(path).toPath();
+//            System.out.println("file path: " + file_path);
+//            String mimetype = "";
+//            try {
+//                mimetype = Files.probeContentType(file_path);
+//                //System.out.println("File type: " + mimetype);
+//            }catch(IOException e){
+//                e.printStackTrace();
+//            }
+
+
+//            System.out.println("user.dir + src/Lab3/Files/hello");
+            String filepath1 = "src/Lab3/Files/hello";
+
             String mimetype = "";
+            Path file_path = new File(filepath1).toPath();
+            System.out.println(file_path);
             try {
                 mimetype = Files.probeContentType(file_path);
                 //System.out.println("File type: " + mimetype);
             }catch(IOException e){
                 e.printStackTrace();
             }
-            File file = new File(path);
 
-
-            if(file.isFile()){
-                System.out.println("File is a file!");
+//        BufferedReader in = new BufferedReader(new FileReader(System.getProperty("user.dir") + filename));
+            try (BufferedReader br = new BufferedReader(new FileReader(filepath1))){
+                StringBuilder sb = new StringBuilder();
+                String line;
+                for (line = br.readLine(); line != null; line = br.readLine()) {
+                    sb.append(line + '\n');
+                    //System.out.println("CONTENT OF FILE: " + sb);
+                }
+//            System.out.println("Stringbuffer read contents: "+sb.toString());
+//                http_response = getResponse(ResponseLibrary.status_200, sb.toString(), http_request.getUser_agent(), mimetype);
+                //send status OK!
+                System.out.println("Contents: "+sb.toString() + " mimetype: " + mimetype);
+//                System.out.println("httpfs: httpresponse after get response : " + http_response);
+            } catch (FileNotFoundException f){
+                //http response
+                System.out.println("Error 500");
+//                http_response = server.error_response(ResponseLibrary.status_500, "File not found: " + path,  http_request.getUser_agent());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            if(!Files.isReadable(file_path)) {
-                System.out.println("403 error");
-//                return server.error_response(ResponseLibrary.status_403, "Forbidden", http_request.getUser_agent());
-            } else if(!file.isFile()) {
-                System.out.println("httpfs 404: not found");
-//                return server.error_response(ResponseLibrary.status_404, "Not Found", http_request.getUser_agent());
-            }
-
 
 
         }
-//        BufferedReader in = new BufferedReader(new FileReader(System.getProperty("user.dir") + filename));
-
 
     }
 }
