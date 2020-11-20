@@ -2,11 +2,15 @@
 2 - implement core tcp functionalities mimicking TCP-three way handshaking
 3 - Endianness: https://stackoverflow.com/questions/35774452/sending-udp-packets-in-the-correct-endianness
 
+general NIO functions https://www.youtube.com/watch?v=VhSu1pRIEqQ
+
 3way Handshake:
+https://www.sciencedirect.com/topics/computer-science/three-way-handshake
 https://medium.com/@maxterjy/tcp-three-way-handshake-e367dc12598f
 client initializes sending SYN(contains seq#0 and no ack #), server sends SYN-ACK(ack # sent and acknowledges seq#0 from client) then finally, ACK(client)
 assume buffer size and seq range is the same and hardcoded.
 
+Once 3 way complete, UDP is connectionless so just send data to server
 
 
 
@@ -85,3 +89,6 @@ underlying channel may flip bits in packet
  - if pkt lost (or ACK) just delayed: retransmission will be duplicate (seq# handles this)
  receiver must specify seq# of pkt being ACKed
  !!needs countdown timer
+
+
+Window size fixed - How to determine what to fix it at?

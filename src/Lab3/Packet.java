@@ -45,9 +45,9 @@ public class Packet {
         this.payload = payload;
     }
 
-    public static Packet HandshakePacket(int type, InetAddress peerAddress, int portNumber) {
+    public static Packet HandshakePacket(int type, long sequenceNumber, InetAddress peerAddress, int portNumber) {
 //        return buildHandshakePacket(2, peerAddress, portNumber, 11111111);
-        return new Packet(type, 11111111, peerAddress, portNumber, "".getBytes());
+        return new Packet(type, sequenceNumber, peerAddress, portNumber, "".getBytes());
     }
 
     public int getType() {
@@ -103,7 +103,7 @@ public class Packet {
         ByteBuffer buf = ByteBuffer.allocate(MAX_LEN).order(ByteOrder.BIG_ENDIAN);
         write(buf);
         buf.flip();
-        System.out.println("to Buffer: " + buf);
+//        System.out.println("to Buffer: " + buf);
         return buf;
     }
 
@@ -128,8 +128,8 @@ public class Packet {
         else if (buf.limit() < MIN_LEN || buf.limit() > MAX_LEN) {
             throw new IOException("Invalid length");
         }
-
-        System.out.println("buf limit 2: " + buf.limit());
+//
+//        System.out.println("buf limit 2: " + buf.limit());
         Builder builder = new Builder();
 
         builder.setType(Byte.toUnsignedInt(buf.get()));
@@ -170,7 +170,7 @@ public class Packet {
 
         public Builder setType(int type) {
             this.type = type;
-            System.out.println("Packet type: " + type);
+//            System.out.println("Packet type: " + type);
             return this;
         }
 
