@@ -40,6 +40,7 @@ public class UDPServer {
 
                 //todo: Switch case for the various types of packets
                 switch (packet.getType()) {
+
                     case 0:
                         System.out.println("Received a DATA Packet");
                         if (channel.isConnected()){
@@ -59,30 +60,23 @@ public class UDPServer {
                                 // do get request
                                String msg =  getProcessing(request);
                                 System.out.println("Got string from file, sending back to client");
+
+                                //check if message is above 1024;
+                                System.out.println("msg byte length "+msg.getBytes().length);
+                                if(msg.getBytes().length > 1013) {
+                                    Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes());
+                                }
                                 Packet resp = packet.toBuilder().setType(3)
                                         .setPayload(msg.getBytes())
                                         .create();
-                                channel.send(resp.toBuffer(), router);
-//
-//                                String msg = Sample_Request;
-//
-//                                //create new packet
-//                                Packet p = new Packet.Builder()
-//                                        .setType(0)
-//                                        .setSequenceNumber(1L)
-//                                        .setPortNumber(serverAddress.getPort())
-//                                        .setPeerAddress(serverAddress.getAddress())
-//                                        .setPayload(msg.getBytes())
-//                                        .create();
 
+                                channel.send(resp.toBuffer(), router);
 
                             }else if(request[1].equals("POST")){
                                 //do post request
                             }
 
                             //send back file to client
-
-
                         }else{
                             System.out.println("Channel not connected");
                         }
@@ -116,6 +110,8 @@ public class UDPServer {
 
         }
     }
+
+
 
 
     private String getProcessing(String[] request) throws IOException {

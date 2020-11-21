@@ -92,3 +92,7 @@ underlying channel may flip bits in packet
 
 
 Window size fixed - How to determine what to fix it at?
+
+Payload: max 1013 bytes must be split
+
+https://tools.ietf.org/html/draft-gg-udt-02#section-3
