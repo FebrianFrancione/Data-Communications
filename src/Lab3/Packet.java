@@ -5,6 +5,8 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Packet represents a simulated network packet.
@@ -48,6 +50,14 @@ public class Packet {
     public static Packet HandshakePacket(int type, long sequenceNumber, InetAddress peerAddress, int portNumber) {
 //        return buildHandshakePacket(2, peerAddress, portNumber, 11111111);
         return new Packet(type, sequenceNumber, peerAddress, portNumber, "".getBytes());
+    }
+
+    //used to create several packets
+    public static List<Packet> packetList(int type, InetAddress peerAddress, int peerPort, byte[] payload){
+        List<Packet> packet_lists = new ArrayList<Packet>();
+        //determien how many packets will be created from payload size
+        int num_of_packets = (int) payload.length/MAX_LEN;
+        return packets;
     }
 
     public int getType() {
