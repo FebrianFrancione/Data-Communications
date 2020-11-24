@@ -58,14 +58,14 @@ public class UDPServer {
                             }
                             if (request[0].equals("GET")){
                                 // do get request
-                               String msg =  getProcessing(request);
+                                String msg =  getProcessing(request);
                                 System.out.println("Got string from file, sending back to client");
 
                                 //check if message is above 1024;
                                 System.out.println("msg byte length "+msg.getBytes().length);
-                                if(msg.getBytes().length > 1013) {
-                                    Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes());
-                                }
+//                                if(msg.getBytes().length > 1013) {
+//                                    Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes());
+//                                }
                                 Packet resp = packet.toBuilder().setType(3)
                                         .setPayload(msg.getBytes())
                                         .create();
@@ -191,6 +191,12 @@ public class UDPServer {
 //                http_response = getResponse(ResponseLibrary.status_200, sb.toString(), http_request.getUser_agent(), mimetype);
                 //send status OK!
                 System.out.println("Contents: "+sb.toString() + " mimetype: " + mimetype);
+                System.out.println("content size: " + sb.toString().length());
+                if (sb.toString().length() > 1013){
+                    //determine how many packets you need
+                    int num_of_packets = (int) Math.ceil((double) sb.toString().length() / 1013);
+                    System.out.println("Number of packets: " + num_of_packets);
+                }
                 return sb.toString();
 //                System.out.println("httpfs: httpresponse after get response : " + http_response);
             } catch (FileNotFoundException f){
@@ -253,4 +259,3 @@ public class UDPServer {
 //            }
 //        }
 //    }
-

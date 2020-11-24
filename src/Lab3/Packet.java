@@ -53,12 +53,12 @@ public class Packet {
     }
 
     //used to create several packets
-    public static List<Packet> packetList(int type, InetAddress peerAddress, int peerPort, byte[] payload){
-        List<Packet> packet_lists = new ArrayList<Packet>();
-        //determien how many packets will be created from payload size
-        int num_of_packets = (int) payload.length/MAX_LEN;
-        return packets;
-    }
+//    public static List<Packet> packetList(int type, InetAddress peerAddress, int peerPort, byte[] payload){
+//        List<Packet> packet_lists = new ArrayList<Packet>();
+//        //determien how many packets will be created from payload size
+//        int num_of_packets = (int) payload.length/MAX_LEN;
+//        return packets;
+//    }
 
     public int getType() {
         return type;
