@@ -22,15 +22,18 @@ public class UDPClient {
         int serverPort = 8007;
         SocketAddress routerAddress = new InetSocketAddress(routerHost, routerPort);
         InetSocketAddress serverAddress = new InetSocketAddress(serverHost, serverPort);
-
-
+        
         String Sample_Request = "GET /hello.txt HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n";
         String sample_method = "GET";
+        threeWayHandshake(routerAddress, serverAddress, Sample_Request);
+
 
         //httpc must be implemented before
         if (sample_method.equals("GET")) {
+        	//to be done by Marjana
             GET_Method(routerAddress, serverAddress, Sample_Request);
         } else {
+        	//to be done by marjana
             POST_Method(routerAddress, serverAddress);
         }
     }
@@ -41,7 +44,7 @@ public class UDPClient {
      * */
     private static void GET_Method(SocketAddress routerAddress, InetSocketAddress serverAddress, String Sample_Request) throws IOException {
         //request processing done before
-        threeWayHandshake(routerAddress, serverAddress, Sample_Request);
+        
 
     }
 
@@ -49,6 +52,7 @@ public class UDPClient {
     }
 
 
+    //handshake to only establish connection betwn client and server. data packets CAN BE SENT AFTER SYN-ACK RECEIVED
     private static void threeWayHandshake(SocketAddress routerAddress, InetSocketAddress serverAddress, String Sample_Request) throws IOException {
         //channel set to blocking by default
         try (DatagramChannel channel = DatagramChannel.open()) {
@@ -86,6 +90,8 @@ public class UDPClient {
                 System.out.println("No response after timeout");
                 return;
             }
+            //NEED TO IMPLEMENT : RESEND SYN IF NO RESPONSE SYN-ACK  AFTER TIMEOUT 
+            
             // We just want a single response.
             ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
             SocketAddress router = channel.receive(buf);
@@ -178,72 +184,4 @@ public class UDPClient {
             keys.clear();
         }
     }
-
-
-
-
-
 }
-
-//    private static void runClient(SocketAddress routerAddress, InetSocketAddress serverAddress, String Sample_Request) throws IOException {
-//        System.out.println("Creating DatagramChannel");
-//        //channel set to blocking by default
-//        try (DatagramChannel channel = DatagramChannel.open()) {
-//            System.out.println("Channel opened, not connected");
-//            System.out.println("Server Started: " + serverAddress);
-//            System.out.println("-----------------------------");
-//
-//            //message that will be converted to bytes
-//            String msg = "";
-//
-//            //create new packet
-//            Packet p = new Packet.Builder()
-//                    .setType(0)
-//                    .setSequenceNumber(1L)
-//                    .setPortNumber(serverAddress.getPort())
-//                    .setPeerAddress(serverAddress.getAddress())
-//                    .setPayload(msg.getBytes())
-//                    .create();
-//
-//            System.out.println("Sending packet to router");
-//            //when sending packet through channel, packet must pass buffer
-//            channel.send(p.toBuffer(), routerAddress);
-//            System.out.println("Sending: " + msg + " to router at: " + routerAddress);
-//            System.out.println("-----------------------------");
-//
-//            /*
-//            Receiving message from server
-//             */
-//
-//
-//            // Try to receive a packet within timeout.
-//            //channel set to non-blocking
-//            channel.configureBlocking(false);
-//
-//            //handle multi channels with single thread
-//            Selector selector = Selector.open();
-//
-//            channel.register(selector, OP_READ);
-//            System.out.println("Waiting for response");
-//            selector.select(5000);
-//            Set<SelectionKey> keys = selector.selectedKeys();
-//            if (keys.isEmpty()) {
-//                System.out.println("No response after timeout");
-//                return;
-//            }
-//
-//            // We just want a single response.
-//            ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
-//            SocketAddress router = channel.receive(buf);
-//            buf.flip();
-//            Packet resp = Packet.fromBuffer(buf);
-//            System.out.println("Packet: " + resp);
-//            System.out.println("Router: " + router);
-//            String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-//            System.out.println("Payload: " + payload);
-//            keys.clear();
-//        }
-//    }
-
-/*
-}*/

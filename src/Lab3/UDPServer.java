@@ -22,6 +22,7 @@ public class UDPServer {
         UDPServer server = new UDPServer();
         server.threeWayListen(port);
         //after handshake client and server can communicate freely ie listen and serve method to be invoked afterwards
+        //ack AFTER SYN-ACK MIGHT CONTAIN DATA PACKETS
         server.listenAndServe(port);
     }
 

@@ -34,7 +34,7 @@ public class Packet {
     11.. -> Payload -> 0 to 1013 bytes
 
 
-  mapping for pkt type: 0->data, 1->ACK, 2->SYN, 3->SYN-ACK, 4->NAK
+  mapping for pkt type: 0->data, 1->ACK, 2->SYN, 3->SYN-ACK, 4->NAK 5->FIN 6->FIN-ACK
     SYN is used by client when 1/3 handshake to server
     SYN-ACK used by server in 2/3 to client
 
