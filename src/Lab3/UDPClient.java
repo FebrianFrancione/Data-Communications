@@ -181,6 +181,7 @@ public class UDPClient {
             System.out.println("Router: " + router);
             String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
             System.out.println("Payload: " + payload);
+            System.out.println("TYPE: "+resp.getType()+"seq#" + resp.getSequenceNumber() );
             keys.clear();
         }
     }
