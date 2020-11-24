@@ -6,11 +6,15 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 
+import static java.nio.channels.SelectionKey.OP_READ;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.sort;
 
@@ -21,9 +25,7 @@ public class UDPServer {
         int port = 8007;
         UDPServer server = new UDPServer();
         server.threeWayListen(port);
-        //after handshake client and server can communicate freely ie listen and serve method to be invoked afterwards
-        //ack AFTER SYN-ACK MIGHT CONTAIN DATA PACKETS
-        server.listenAndServe(port);
+//        server.listenAndServe(port);
     }
 
     private void threeWayListen(int port) throws IOException {
@@ -31,6 +33,7 @@ public class UDPServer {
             // bind channel to inetaddress
             channel.bind(new InetSocketAddress(port));
             ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN).order(ByteOrder.BIG_ENDIAN);
+
             System.out.println("EchoServer is listening at: " + channel.getLocalAddress());
             for (; ; ) {
                 buf.clear();
@@ -40,21 +43,73 @@ public class UDPServer {
                 Packet packet = Packet.fromBuffer(buf);
                 //what does this flip do?
                 buf.flip();
-
+                String msg = null;
                 //todo: Switch case for the various types of packets
                 switch (packet.getType()) {
                     case 0:
-                    	 System.out.println("Received an ACK Packet!");
-                         System.out.println("seq# " + packet.getSequenceNumber());
-                         channel.connect(router);
-                         System.out.println("Datagram Channel connected");
-                         System.out.println("3-way handshake complete");
-                         System.out.println("-----------------------------");
-                         break;
-                       
+                        System.out.println("Received a DATA Packet");
+                        if (channel.isConnected()){
+                            System.out.println("channel connected");;
+                            String payload = new String(packet.getPayload(), UTF_8);
+                            System.out.println("Packet: " + packet);
+                            System.out.println("Payload: " + payload);
+                            System.out.println("Router: " + router);
+                            //do request processing --> Httpfs
+                            //todo here
+                            //how will request processing be done?
+                            String[] request = payload.split(" ");
+                            for(int i = 0; i< request.length; i++){
+                                System.out.println(request[i]);
+                            }
+                            if (request[0].equals("GET")){
+
+                                // do get request
+                                msg =  getProcessing(request);
+                                System.out.println("Got string from file, sending back to client");
+                                //check if message is above 1024;
+                                System.out.println("msg byte length "+msg.getBytes().length);
+                                System.out.println("content size: " + msg.getBytes().length);
+
+
+//                                if (msg.getBytes().length > 1013){
+//                                    //determine how many packets you need
+//                                    int num_of_pkts = (int) Math.ceil((double) msg.getBytes().length / 1013);
+//                                    System.out.println("Number of packets: " + num_of_pkts);
+//                                    //this should determine num of packets. How to remove error?
+////                    break content down into different packets
+//                                    List<Packet> packet_lists = Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes(), num_of_pkts);
+//                                    System.out.println("Number of packets that will be sent to client: " + packet_lists.size());
+//                                    for (Packet pkt : packet_lists) {
+//                                        System.out.println("Packet seq#: " + pkt.getSequenceNumber() + " pkt payload: " + pkt.getPayload());
+//                                        channel.send(pkt.toBuffer(), router);
+//                                    }
+//                                }else{
+//                                    Packet resp = packet.toBuilder().setType(3)
+//                                        .setPayload(msg.getBytes())
+//                                        .create();
+//                                channel.send(resp.toBuffer(), router);
+//                                }
+
+                            }else if(request[1].equals("POST")){
+                                //do post request
+                            }
+
+                            //send back file to client
+                        }else{
+                            System.out.println("Channel not connected");
+                        }
+                        break;
 
                     case 1:
-                    	// in the case of SYN packet, following fsm structure, needs to wait for ACK from client and send a SYN-ACK back to client
+                        System.out.println("Received an ACK Packet!");
+                        System.out.println("seq# " + packet.getSequenceNumber());
+                        channel.connect(router);
+                        System.out.println("Datagram Channel connected");
+                        System.out.println("3-way handshake complete");
+                        System.out.println("-----------------------------");
+                        break;
+                    case 2:
+                        // in the case of SYN packet, following fsm structure, needs to wait for ACK from client and send a SYN-ACK back to client
                         System.out.println("Received a SYN Packet");
                         Packet resp = packet.toBuilder().setType(3).setSequenceNumber(packet.getSequenceNumber()+1).create();
                         System.out.println("Sending SYN-ACK to client");
@@ -63,20 +118,103 @@ public class UDPServer {
 
                         System.out.println("-----------------------------");
                         break;
-                    case 2:
-                    	//timer needs to be implemented if ack not received in time send syn-ack again.
-                        System.out.println("Timeout sending syn-ack again");
+                    case 4:
+                        System.out.println("Received a NAK Packet");
                         break;
                     default:
                         throw new Error("Invalid data type. System Exiting");
                 }
+
+//_______________________________sending responses____________________________
+
+                if(packet.getType() == 0) {
+                    try {
+                        channel.configureBlocking(false);
+                        Selector selector = Selector.open();
+                        channel.register(selector, OP_READ);
+                        System.out.println("Test 1");
+//                    logger.info("Waiting {} milliseconds for the synack response", Config.RESPONSE_TIMEOUT_MILLIS);
+//                        selector.select(500);
+                        Set<SelectionKey> keys = selector.selectedKeys();
+//                        if (keys.isEmpty()) {
+////                            System.out.println("Test 4");
+//////                        logger.error("No response after timeout - was waiting for preData ack - aborting connection");
+////                            return;
+////                        }
+                        System.out.println("Test 4");
+                        if (selector.isOpen()) {
+                            selector.close();
+                            keys.clear();
+                            channel.configureBlocking(true);
+                        }
+                        System.out.println("Test 2");
+
+                        if (msg.getBytes().length > 1013) {
+                            System.out.println("Test 3");
+                            //determine how many packets you need
+                            int num_of_pkts = (int) Math.ceil((double) msg.getBytes().length / 1013);
+                            System.out.println("Number of packets: " + num_of_pkts);
+                            //this should determine num of packets. How to remove error?
+//                    break content down into different packets
+                            List<Packet> packet_lists = Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes(), num_of_pkts);
+
+                            System.out.println("Number of packets that will be sent to client: " + packet_lists.size());
+                            for (Packet pkt : packet_lists) {
+                                System.out.println("Packet seq#: " + pkt.getSequenceNumber() + " pkt payload: " + pkt.getPayload());
+                                channel.send(pkt.toBuffer(), router);
+                                System.out.println("Sent!");
+                            }
+                        } else {
+                            Packet resp = packet.toBuilder().setType(3)
+                                    .setPayload(msg.getBytes())
+                                    .create();
+                            channel.send(resp.toBuffer(), router);
+                        }
+
+                        //____________________________________sent, waiting in response___________________
+                        while (true) {
+                            channel.configureBlocking(false);
+                            selector = Selector.open();
+                            channel.register(selector, OP_READ);
+                            System.out.println("Waiting milliseconds");
+                            selector.select(500);
+                            keys = selector.selectedKeys();
+                            if (keys.isEmpty()) {
+                                continue;
+                            }
+
+                            buf.clear();
+                            channel.receive(buf);
+                            buf.flip();
+                            Packet retransOrAck = Packet.fromBuffer(buf);
+//                        7 == all data confirmed
+                            if (retransOrAck.getType() == 7) {
+                                System.out.println("Server confirmed all apckets were received");
+//                            logger.info("Server confirmed it got all data packets - this send is complete.");
+                                selector.close();
+                                break;
+                            } else {
+                                System.out.println("Error failed to reransmit ");
+                            }
+
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Failed to transmit data");
+                    }
+                }
+
+
             }
+
         }
     }
 
 
+
+
     private String getProcessing(String[] request) throws IOException {
-    	//invoke httpc server here
         System.out.println("Entered get processing");
 
         if(request[1].contains("txt")){
@@ -169,80 +307,50 @@ public class UDPServer {
 
         return null;
     }
-    
-    //to be done by Marjana
-    /*private void postProcessing() {
-    }*/
-    
-    
-    
-
-
-
-
-
-    private void listenAndServe(int port) throws IOException {
-    	 try (DatagramChannel channel = DatagramChannel.open()) {
-             channel.bind(new InetSocketAddress(port));
-             System.out.println("EchoServer is listening at {}" +  channel.getLocalAddress());
-             ByteBuffer buf = ByteBuffer
-                     .allocate(Packet.MAX_LEN)
-                     .order(ByteOrder.BIG_ENDIAN);
-
-             for (; ; ) {
-                 buf.clear();
-                 SocketAddress router = channel.receive(buf);
-
-                 // Parse a packet from the received raw data.
-                 buf.flip();
-                 Packet packet = Packet.fromBuffer(buf);
-                 buf.flip();
-                 System.out.println("Received a DATA Packet");
-                 if (channel.isConnected()){
-                     System.out.println("channel connected");
-                     //why tho?
-                     String payload = new String(packet.getPayload(), UTF_8);
-                     System.out.println("Packet: " + packet);
-                     System.out.println("Payload: " + payload);
-                     System.out.println("Router: " + router);
-                     //do request processing --> Httpfs
-                     //todo here
-                     String[] request = payload.split(" ");
-                     for(int i = 0; i< request.length; i++){
-                         System.out.println(request[i]);
-                     }
-                     if (request[0].equals("GET")){
-                         // do get request
-                         String msg =  getProcessing(request);
-                         System.out.println("Got string from file, sending back to client");
-
-                         //check if message is above 1024;
-                         System.out.println("msg byte length "+msg.getBytes().length);
-
-                         System.out.println("content size: " + msg.getBytes().length);
-                         if (msg.getBytes().length > 1013){
-                             //determine how many packets you need
-                             int num_of_pkts = (int) Math.ceil((double) msg.getBytes().length / 1013);
-                             System.out.println("Number of packets: " + num_of_pkts);
-                             //this should determine num of packets. How to remove error?
-                             // break content down into different packets
-                             List<Packet> packet_lists = Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes(), num_of_pkts);
-                             System.out.println("Number of packets that will be sent to client: " + packet_lists.size());
-                             for (Packet pkt : packet_lists) {
-                                 System.out.println("Type: " + pkt.getType() + " sequence nunmber: " + pkt.getSequenceNumber() + " payload: " + pkt.getPayload());
-                                 channel.send(pkt.toBuffer(), router);
-                             }
-                         }
-
-                     }else if(request[1].equals("POST")){
-                         //do post request TO BE DONE BY MARJANA
-                     }
-
-                     //send back file to client
-                 }else{
-                     System.out.println("Channel not connected");
-                 }
-             }
-         }
-    }
 }
+
+
+
+
+//    private void listenAndServe(int port) throws IOException {
+//        try (DatagramChannel channel = DatagramChannel.open()) {
+//
+//            // bind channel to inetaddress
+//            channel.bind(new InetSocketAddress(port));
+//            System.out.println("EchoServer is listening at: " + channel.getLocalAddress());
+//            ByteBuffer buf = ByteBuffer
+//                    .allocate(Packet.MAX_LEN)
+//                    .order(ByteOrder.BIG_ENDIAN);
+//            //idk what this for loop is
+//            for (; ; ) {
+//                buf.clear();
+//                SocketAddress router = channel.receive(buf);
+//                // Parse a packet from the received raw data.
+//                buf.flip();
+//                Packet packet = Packet.fromBuffer(buf);
+//                buf.flip();
+//
+//                if (packet.getType() == 2){
+//                    System.out.println("SYN received");
+//                }else
+//
+//
+//                String payload = new String(packet.getPayload(), UTF_8);
+//                System.out.println("Packet: " + packet);
+//                System.out.println("Payload: " + payload);
+//                System.out.println("Router: " + router);
+//
+//
+//                // Send the response to the router not the client.
+//                // The peer address of the packet is the address of the client already.
+//                // We can use toBuilder to copy properties of the current packet.
+//                // This demonstrate how to create a new packet from an existing packet.
+//                System.out.println("Sending SYN-ACK to router");
+//                Packet resp = packet.toBuilder().setType(3)
+//                        .setPayload(payload.getBytes())
+//                        .create();
+//                channel.send(resp.toBuffer(), router);
+//
+//            }
+//        }
+//    }
