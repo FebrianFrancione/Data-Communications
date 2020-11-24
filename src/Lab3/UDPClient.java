@@ -144,7 +144,7 @@ public class UDPClient {
             System.out.println("-----------------------------");
 
 
-            long startTime = System.currentTimeMillis();
+//            long startTime = System.currentTimeMillis();
             Map<Integer, String> dataParts = new HashMap<>();
 
             while (true) {
@@ -153,31 +153,29 @@ public class UDPClient {
                 channel.receive(buf);
                 buf.flip();
 
-                Packet respDataPart = Packet.fromBuffer(buf);
+                Packet pkt_data = Packet.fromBuffer(buf);
 
-                String currentPayload = new String(respDataPart.getPayload(), UTF_8);
-                Long seqLong = respDataPart.getSequenceNumber(); // conversion
+                String payload_chunk = new String(pkt_data.getPayload(), UTF_8);
+                Long seqLong = pkt_data.getSequenceNumber(); // conversion
 
-                dataParts.put(seqLong.intValue(), currentPayload);
+                dataParts.put(seqLong.intValue(), payload_chunk);
 
+                // temporary
+                int dataPartssize = 2;
                 // Check if we've got all the parts
-                if (dataParts.size() == 2) {
-                    StringBuilder payloadBuilder = new StringBuilder();
+                if (dataParts.size() == dataPartssize) {
+                    StringBuilder final_payload = new StringBuilder();
                     Set<Integer> keySet = dataParts.keySet();
                     List<Integer> keysList = new ArrayList<>(keySet);
                     Collections.sort(keysList);
                     for (Integer k : keysList) {
                         System.out.println("part: "+dataParts.get(k));
-                        payloadBuilder.append(dataParts.get(k));
+                        final_payload.append(dataParts.get(k));
                     }
-
-                    // Return an all-clear data message to the server
-//                    Packet gotAllDataPacket = Packet.buildGotAllDataPacket(peerAddress, peerPort);
-//                    channel.send(gotAllDataPacket.toBuffer(), router);
 
                     // Finally, we can return the full payload
                     System.out.println("Got the full response from server");
-                    System.out.println(payloadBuilder.toString());
+                    System.out.println(final_payload.toString());
 
                 } else {
                     continue;
@@ -186,290 +184,3 @@ public class UDPClient {
         }
     }
 }
-////        running client
-////            runClient1(routerAddress, serverAddress, Sample_Request);
-//            String msg = Sample_Request;
-//            System.out.println("sample request: " + Sample_Request);
-//            System.out.println("0.1");
-//            //create new packet
-//            Packet p1 = new Packet.Builder()
-//                    .setType(0)
-//                    .setSequenceNumber(1L)
-//                    .setPortNumber(serverAddress.getPort())
-//                    .setPeerAddress(serverAddress.getAddress())
-//                    .setPayload(Sample_Request.getBytes())
-//                    .create();
-//
-//            System.out.println("Sending packet to router");
-//            //when sending packet through channel, packet must pass buffer
-//            channel.send(p1.toBuffer(), routerAddress);
-//            System.out.println("Sending: " + msg + " to router at: " + routerAddress);
-//            System.out.println("-----------------------------");
-//
-//            System.out.println("0.2");
-//            channel.configureBlocking(false);
-//            selector = Selector.open();
-//            channel.register(selector, OP_READ);
-//            System.out.println("waiting milliseconds3");
-////            logger.info("Waiting {} milliseconds for the synack response", Config.RESPONSE_TIMEOUT_MILLIS);
-//            selector.select(500);
-//            keys = selector.selectedKeys();
-//            if (keys.isEmpty()) {
-//                System.out.println("No response after timeout");
-//            }
-//            System.out.println("Keys size: " + keys.size());
-//            buf = ByteBuffer.allocate(5000);
-//            router = channel.receive(buf);
-//            buf.flip();
-//
-//            if (selector.isOpen()) {
-//                selector.close();
-//                keys.clear();
-//                channel.configureBlocking(true);
-//            }
-//
-//            long startTime = System.currentTimeMillis();
-//            Map<Integer, String> dataParts = new HashMap<>();
-//
-//            while (true) {
-//                System.out.println("Here?");
-////                    if (System.currentTimeMillis() - startTime > 500) {
-////                        List<Integer> missingParts = new ArrayList<>();
-////                        // Which parts are missing
-////                        for (int i = 1; i == 2; i++) {
-////                            if (!dataParts.containsKey(i)) {
-////                                missingParts.add(i);
-////                            }
-////                        }
-////
-//////                        for (Integer missingSeq : missingParts) {
-//////                            Packet resendP = Packet.buildRetransmitRequestPacket(peerAddress, peerPort, missingSeq);
-//////                            channel.send(resendP.toBuffer(), router);
-//////                        }
-////                        startTime = System.currentTimeMillis();
-////                    }
-//
-//                buf.clear();
-//
-//                System.out.println("Buf: " + buf);
-//                channel.receive(buf);
-//                System.out.println("HEre 1.2");
-//                buf.flip();
-//                System.out.println("HEre 1.3");
-//                Packet respDataPart = Packet.fromBuffer(buf);
-//                System.out.println("HEre 1.25: " + respDataPart);
-//                System.out.println("Seq$: " + respDataPart.getSequenceNumber());
-//                String currentPayload = new String(respDataPart.getPayload(), UTF_8);
-//                Long seqLong = respDataPart.getSequenceNumber(); // conversion
-//
-//                dataParts.put(seqLong.intValue(), currentPayload);
-//                System.out.println("Dataparts size: " + dataParts.size());
-//                if (dataParts.size() == 1) {
-//                    StringBuilder payloadBuilder = new StringBuilder();
-//                    Set<Integer> keySet = dataParts.keySet();
-//                    List<Integer> keysList = new ArrayList<>(keySet);
-//                    Collections.sort(keysList);
-//                    for (Integer k : keysList) {
-//                        System.out.println("get k dataparts: " + dataParts.get(k));
-//                        payloadBuilder.append(dataParts.get(k));
-//                    }
-//// Return an all-clear data message to the server
-////                        Packet gotAllDataPacket = Packet.buildGotAllDataPacket(peerAddress, peerPort);
-//                    System.out.println("String builder: " + payloadBuilder);
-//                    System.out.println("Here 3");
-////                    String msg2 = "confirmed";
-////                    Packet gotAllDataPacket = new Packet.Builder()
-////                            .setType(7)
-////                            .setSequenceNumber(1L)
-////                            .setPortNumber(serverAddress.getPort())
-////                            .setPeerAddress(serverAddress.getAddress())
-////                            .setPayload(msg2.getBytes())
-////                            .create();
-//
-//                    Packet gotalldata = Packet.HandshakePacket(7, 100, serverAddress.getAddress(), serverAddress.getPort());
-//                    channel.send(gotalldata.toBuffer(), router);
-//                    // Finally, we can return the full payload
-////                        logger.info("Got the full response from server");
-//                    System.out.println("Got full response");
-//                    System.out.println(payloadBuilder.toString());;
-//
-//                } else {
-//                    continue;
-//                }
-//            }
-
-//    private static String runClient1(SocketAddress routerAddress, InetSocketAddress serverAddress, String Sample_Request) throws IOException {
-//
-//        System.out.println("Channel opened, not connected");
-//        System.out.println("Server Started: " + serverAddress);
-//        System.out.println("-----------------------------");
-//
-//        try (DatagramChannel channel = DatagramChannel.open()) {
-//
-//            String msg = Sample_Request;
-//
-//            //create new packet
-//            Packet p = new Packet.Builder()
-//                    .setType(0)
-//                    .setSequenceNumber(1L)
-//                    .setPortNumber(serverAddress.getPort())
-//                    .setPeerAddress(serverAddress.getAddress())
-//                    .setPayload(msg.getBytes())
-//                    .create();
-//
-//            System.out.println("Sending packet to router");
-//            //when sending packet through channel, packet must pass buffer
-//            channel.send(p.toBuffer(), routerAddress);
-//            System.out.println("Sending: " + msg + " to router at: " + routerAddress);
-//            System.out.println("-----------------------------");
-//
-//
-//
-//
-//            channel.configureBlocking(false);
-//            Selector selector = Selector.open();
-//            channel.register(selector, OP_READ);
-//            System.out.println("waiting milliseconds3");
-////            logger.info("Waiting {} milliseconds for the synack response", Config.RESPONSE_TIMEOUT_MILLIS);
-//            selector.select(500);
-//            Set<SelectionKey> keys = selector.selectedKeys();
-//            if (keys.isEmpty()) {
-//                return "No response after timeout";
-//            }
-//            System.out.println("Keys size: " + keys.size());
-//            ByteBuffer buf = ByteBuffer.allocate(5000);
-//            SocketAddress router = channel.receive(buf);
-//            buf.flip();
-//
-//            if (selector.isOpen()) {
-//                selector.close();
-//                keys.clear();
-//                channel.configureBlocking(true);
-//            }
-//
-//            long startTime = System.currentTimeMillis();
-//            Map<Integer, String> dataParts = new HashMap<>();
-//
-//            while (true) {
-//                System.out.println("Here?");
-////                    if (System.currentTimeMillis() - startTime > 500) {
-////                        List<Integer> missingParts = new ArrayList<>();
-////                        // Which parts are missing
-////                        for (int i = 1; i == 2; i++) {
-////                            if (!dataParts.containsKey(i)) {
-////                                missingParts.add(i);
-////                            }
-////                        }
-////
-//////                        for (Integer missingSeq : missingParts) {
-//////                            Packet resendP = Packet.buildRetransmitRequestPacket(peerAddress, peerPort, missingSeq);
-//////                            channel.send(resendP.toBuffer(), router);
-//////                        }
-////                        startTime = System.currentTimeMillis();
-////                    }
-//                System.out.println("Here 1");
-//                buf.clear();
-//                System.out.println("HEre 1.1");
-//                System.out.println("Buf: " + buf);
-//                channel.receive(buf);
-//                System.out.println("HEre 1.2");
-//                buf.flip();
-//                System.out.println("HEre 1.3");
-//                Packet respDataPart = Packet.fromBuffer(buf);
-//                System.out.println("HEre 1.25: " + respDataPart);
-//                String currentPayload = new String(respDataPart.getPayload(), UTF_8);
-//                Long seqLong = respDataPart.getSequenceNumber(); // conversion
-//
-//                dataParts.put(seqLong.intValue(), currentPayload);
-//                System.out.println("Here 1.5");
-//                System.out.println("Dataparts size: " + dataParts.size());
-//                if (dataParts.size() == 1) {
-//                    System.out.println("Here 2");
-//                    StringBuilder payloadBuilder = new StringBuilder();
-//                    Set<Integer> keySet = dataParts.keySet();
-//                    List<Integer> keysList = new ArrayList<>(keySet);
-//                    Collections.sort(keysList);
-//                    for (Integer k : keysList) {
-//                        System.out.println("get k dataparts: " + dataParts.get(k-1));
-//                        payloadBuilder.append(dataParts.get(k));
-//                    }
-//// Return an all-clear data message to the server
-////                        Packet gotAllDataPacket = Packet.buildGotAllDataPacket(peerAddress, peerPort);
-//                    System.out.println("String builder: " + payloadBuilder);
-//                    System.out.println("Here 3");
-////                    String msg2 = "confirmed";
-////                    Packet gotAllDataPacket = new Packet.Builder()
-////                            .setType(7)
-////                            .setSequenceNumber(1L)
-////                            .setPortNumber(serverAddress.getPort())
-////                            .setPeerAddress(serverAddress.getAddress())
-////                            .setPayload(msg2.getBytes())
-////                            .create();
-//
-//                    Packet gotalldata = Packet.HandshakePacket(7, 100, serverAddress.getAddress(), serverAddress.getPort());
-//                                        channel.send(gotalldata.toBuffer(), router);
-//                    // Finally, we can return the full payload
-////                        logger.info("Got the full response from server");
-//                    System.out.println("Got full response");
-//                    return payloadBuilder.toString();
-//
-//                } else {
-//                    continue;
-//                }
-//
-//            }
-//
-//        }
-//    }
-
-//            //message that will be converted to bytes
-//            String msg = Sample_Request;
-//
-//            //create new packet
-//            Packet p = new Packet.Builder()
-//                    .setType(0)
-//                    .setSequenceNumber(1L)
-//                    .setPortNumber(serverAddress.getPort())
-//                    .setPeerAddress(serverAddress.getAddress())
-//                    .setPayload(msg.getBytes())
-//                    .create();
-//
-//            System.out.println("Sending packet to router");
-//            //when sending packet through channel, packet must pass buffer
-//            channel.send(p.toBuffer(), routerAddress);
-//            System.out.println("Sending: " + msg + " to router at: " + routerAddress);
-//            System.out.println("-----------------------------");
-//
-//            /*
-//            Receiving message from server
-//             */
-//
-//
-//            // Try to receive a packet within timeout.
-//            //channel set to non-blocking
-//            channel.configureBlocking(false);
-//
-//            //handle multi channels with single thread
-//            Selector selector = Selector.open();
-//
-//            channel.register(selector, OP_READ);
-//            System.out.println("Waiting for response");
-//            selector.select(5000);
-//            Set<SelectionKey> keys = selector.selectedKeys();
-//            if (keys.isEmpty()) {
-//                System.out.println("No response after timeout");
-//                return;
-//            }
-
-
-// We just want a single response.
-//            ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LEN);
-//            SocketAddress router = channel.receive(buf);
-//            buf.flip();
-//            Packet resp = Packet.fromBuffer(buf);
-//            System.out.println("Packet: " + resp);
-//            System.out.println("Router: " + router);
-//            String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-//            System.out.println("Payload: " + payload);
-//            System.out.println("TYPE: "+resp.getType()+"seq#" + resp.getSequenceNumber() );
-//            keys.clear();
