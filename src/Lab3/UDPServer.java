@@ -196,6 +196,7 @@ public class UDPServer {
                     //determine how many packets you need
                     int num_of_packets = (int) Math.ceil((double) sb.toString().length() / 1013);
                     System.out.println("Number of packets: " + num_of_packets);
+                    //this should determine num of packets. How to remove error?
                 }
                 return sb.toString();
 //                System.out.println("httpfs: httpresponse after get response : " + http_response);
