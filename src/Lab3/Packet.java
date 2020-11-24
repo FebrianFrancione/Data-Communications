@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,12 +54,20 @@ public class Packet {
     }
 
     //used to create several packets
-//    public static List<Packet> packetList(int type, InetAddress peerAddress, int peerPort, byte[] payload){
-//        List<Packet> packet_lists = new ArrayList<Packet>();
-//        //determien how many packets will be created from payload size
-//        int num_of_packets = (int) payload.length/MAX_LEN;
-//        return packets;
-//    }
+    public static List<Packet> packetList(int type, InetAddress peerAddress, int peerPort, byte[] payload, int num_of_pkts){
+        List<Packet> packet_lists = new ArrayList<Packet>();
+
+        //determien how many packets will be created from payload size
+        for(int i = 0; i < num_of_pkts; i++){
+            int end =(1+i)*1013;
+            if(i+1 == num_of_pkts){
+                end =payload.length;
+            }
+            byte[] payloadChunks = Arrays.copyOfRange(payload, i * 1013, end);
+            packet_lists.add(new Packet(type, i + 1, peerAddress, peerPort, payloadChunks));
+        }
+        return packet_lists;
+    }
 
     public int getType() {
         return type;

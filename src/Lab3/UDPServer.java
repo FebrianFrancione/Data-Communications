@@ -9,6 +9,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.sort;
@@ -63,14 +64,30 @@ public class UDPServer {
 
                                 //check if message is above 1024;
                                 System.out.println("msg byte length "+msg.getBytes().length);
+
+                                System.out.println("content size: " + msg.getBytes().length);
+                                if (msg.getBytes().length > 1013){
+                                    //determine how many packets you need
+                                    int num_of_pkts = (int) Math.ceil((double) msg.getBytes().length / 1013);
+                                    System.out.println("Number of packets: " + num_of_pkts);
+                                    //this should determine num of packets. How to remove error?
+//                    break content down into different packets
+                                    List<Packet> packet_lists = Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes(), num_of_pkts);
+                                    System.out.println("Number of packets that will be sent to client: " + packet_lists.size());
+                                    for (Packet pkt : packet_lists) {
+                                        System.out.println("Type: " + pkt.getType() + " sequence nunmber: " + pkt.getSequenceNumber() + " payload: " + pkt.getPayload());
+                                        channel.send(pkt.toBuffer(), router);
+                                    }
+                                }
 //                                if(msg.getBytes().length > 1013) {
 //                                    Packet.packetList(0, packet.getPeerAddress(), packet.getPeerPort(), msg.getBytes());
 //                                }
-                                Packet resp = packet.toBuilder().setType(3)
-                                        .setPayload(msg.getBytes())
-                                        .create();
 
-                                channel.send(resp.toBuffer(), router);
+//                                Packet resp = packet.toBuilder().setType(3)
+//                                        .setPayload(msg.getBytes())
+//                                        .create();
+
+//                                channel.send(resp.toBuffer(), router);
 
                             }else if(request[1].equals("POST")){
                                 //do post request
@@ -191,13 +208,7 @@ public class UDPServer {
 //                http_response = getResponse(ResponseLibrary.status_200, sb.toString(), http_request.getUser_agent(), mimetype);
                 //send status OK!
                 System.out.println("Contents: "+sb.toString() + " mimetype: " + mimetype);
-                System.out.println("content size: " + sb.toString().length());
-                if (sb.toString().length() > 1013){
-                    //determine how many packets you need
-                    int num_of_packets = (int) Math.ceil((double) sb.toString().length() / 1013);
-                    System.out.println("Number of packets: " + num_of_packets);
-                    //this should determine num of packets. How to remove error?
-                }
+
                 return sb.toString();
 //                System.out.println("httpfs: httpresponse after get response : " + http_response);
             } catch (FileNotFoundException f){
