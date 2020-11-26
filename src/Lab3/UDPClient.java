@@ -120,14 +120,13 @@ public class UDPClient {
             //when sending packet through channel, packet must pass buffer
             channel.send(ACK_pkt.toBuffer(), routerAddress);
 
-            System.out.println("-----------------------------");
+            System.out.println("------------------------------------------");
 
             //start the other method of sending request here? or back in GETmethod?
-            System.out.println("3 Way hanshake complete");
+            System.out.println("3 Way handshake complete");
 //        running client
 //            runClient1(routerAddress, serverAddress, Sample_Request);
-            System.out.println("sample request: " + Sample_Request);
-            System.out.println("0.1");
+            System.out.println("Sending sample request to server: " + Sample_Request);
             //create new packet
             Packet p1 = new Packet.Builder()
                     .setType(0)
@@ -141,8 +140,8 @@ public class UDPClient {
             //when sending packet through channel, packet must pass buffer
             channel.send(p1.toBuffer(), routerAddress);
             System.out.println("Sending: " + Sample_Request + " to router at: " + routerAddress);
-            System.out.println("-----------------------------");
-
+            System.out.println("---------------------------------------------");
+            //__________________________________________________________________
 
 //            long startTime = System.currentTimeMillis();
             Map<Integer, String> dataParts = new HashMap<>();
@@ -160,8 +159,8 @@ public class UDPClient {
 
                 dataParts.put(seqLong.intValue(), payload_chunk);
 
-                // temporary
-                int dataPartssize = 2;
+                // temporary this data aprt size will be the amoutn of packets received by the client. Working on making this modular
+                int dataPartssize = 3;
                 // Check if we've got all the parts
                 if (dataParts.size() == dataPartssize) {
                     StringBuilder final_payload = new StringBuilder();
@@ -169,13 +168,20 @@ public class UDPClient {
                     List<Integer> keysList = new ArrayList<>(keySet);
                     Collections.sort(keysList);
                     for (Integer k : keysList) {
-                        System.out.println("part: "+dataParts.get(k));
+                        System.out.println("part " + k + ": "+dataParts.get(k));
+                        System.out.println("----------------END OF PART------------------");
                         final_payload.append(dataParts.get(k));
+                        //send packet ack here?
                     }
 
-                    // Finally, we can return the full payload
-                    System.out.println("Got the full response from server");
+                    //display payload
                     System.out.println(final_payload.toString());
+
+                    //show message to cvonfirm then send response
+                    System.out.println("Data confirmed, sending response back to server");
+
+                    //create packet to send back
+                    // this ack is for receiving all packets rdt 1.0
 
                 } else {
                     continue;
