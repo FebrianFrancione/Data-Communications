@@ -34,7 +34,7 @@ public class Packet {
     11.. -> Payload -> 0 to 1013 bytes
 
 
-  mapping for pkt type: 0->data, 1->ACK, 2->SYN, 3->SYN-ACK, 4->NAK 5->FIN 6->FIN-ACK
+  mapping for pkt type: 0->data, 1->ACK, 2->SYN, 3->SYN-ACK, 4->FIN 5->FIN-ACK
     SYN is used by client when 1/3 handshake to server
     SYN-ACK used by server in 2/3 to client
 
@@ -49,7 +49,10 @@ public class Packet {
     }
 
     public static Packet HandshakePacket(int type, long sequenceNumber, InetAddress peerAddress, int portNumber) {
-//        return buildHandshakePacket(2, peerAddress, portNumber, 11111111);
+        return new Packet(type, sequenceNumber, peerAddress, portNumber, "".getBytes());
+    }
+    
+    public static Packet endHandshakePacket(int type, long sequenceNumber, InetAddress peerAddress, int portNumber) {
         return new Packet(type, sequenceNumber, peerAddress, portNumber, "".getBytes());
     }
 
@@ -122,7 +125,6 @@ public class Packet {
         ByteBuffer buf = ByteBuffer.allocate(MAX_LEN).order(ByteOrder.BIG_ENDIAN);
         write(buf);
         buf.flip();
-//        System.out.println("to Buffer: " + buf);
         return buf;
     }
 
@@ -147,8 +149,6 @@ public class Packet {
         else if (buf.limit() < MIN_LEN || buf.limit() > MAX_LEN) {
             throw new IOException("Invalid length");
         }
-//
-//        System.out.println("buf limit 2: " + buf.limit());
         Builder builder = new Builder();
 
         builder.setType(Byte.toUnsignedInt(buf.get()));
@@ -189,7 +189,6 @@ public class Packet {
 
         public Builder setType(int type) {
             this.type = type;
-//            System.out.println("Packet type: " + type);
             return this;
         }
 

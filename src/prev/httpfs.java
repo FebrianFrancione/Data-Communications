@@ -23,7 +23,8 @@ public class httpfs implements req_handler {
 //        String path = rootDir + http_request.getRequest();
 //        File file = new File(path);
         //trying to set defAULT rootdir
-        String path = directory_root + "/src/testFile" + http_request.getRequest();
+        System.out.println(directory_root);
+        String path = directory_root + "/src/prev/testFile" + http_request.getRequest();
 //        System.out.println("HTTPFS: Rootdir: " + rootDir);
 //        System.out.println("Httpsrequest.getrequesturi: " + httpRequest.getRequestURI().replace('/','\\'));
         //hardcoded

@@ -34,7 +34,7 @@ public class Httpc {
 				//for post
 				else {
 					//lib.post("post -d \"hello  there\"  http://httpbin.org/post");
-					lib.post("post -d \"hello everyone\" http://localhost:8080/randmFyl.txt");
+					//lib.post("post -d \"hello everyone\" http://localhost:8080/randmFyl.txt");
 					//POST /test1234 HTTP/1.0\r\nUser-Agent: Concordia\r\n\r\n
 					
 				}
