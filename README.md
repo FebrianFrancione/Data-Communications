@@ -1,5 +1,5 @@
 # Data-Communications-A1
-COMP 445 Assignments 1-3
+COMP 445 Assignments - TCP using UdP included
 HTTP client, HTTP File server and UDP datagramChannel implementing the various RDT(Reliable Data Transfers 1.0-3.0)
 
 When Using code: 
