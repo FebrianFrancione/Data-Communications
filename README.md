@@ -1,7 +1,7 @@
 # Data-Communications-A1
 COMP 445 Assignments - TCP using UdP included
 HTTP client, HTTP File server and UDP datagramChannel implementing the various RDT(Reliable Data Transfers 1.0-3.0)
-To be completed...
+To be completed... or set to private
 
 When Using code: 
 Go in terminal: enter cd src: enter Javac HTTPclient.java, then Java Httpclient to enter the command line for this assignment.
